@@ -10,7 +10,7 @@
 | Explain a failed calculation | Invalid syntax and division by zero produce stable error codes and locations within the submitted expression. |
 | Bound public input | Test numeric literals of 15 and 16 digits, expressions with 40 and 41 operands, and nesting at 32 and 33 levels. Test the HTTP body boundary independently. |
 | Continue a calculation | After equals, an operator extends the prior expression with its grouping preserved. A digit starts a new calculation. The API remains stateless. |
-| Verify the API and its architecture | Run arithmetic and parser unit tests, HTTP contract tests, parser fuzz seeds and a package dependency check. Generate a Go statement coverage report. Run the checked-in Postman examples against a running service. |
+| Verify calculator behavior and the API contract | Run the expression domain tests and fuzz seeds. Generate a domain statement coverage report. Run the checked-in Postman examples against a running service. |
 | Package and deploy the API | Build and run the checked-in API Dockerfile locally. Deploy from the same Dockerfile on Railway, listen on the supplied `PORT`, and verify a calculation through the public HTTPS URL. |
 | Make the submission reviewable | Provide setup and run instructions, API examples, design assumptions, coverage, AI prompts, a Git repository link and a Railway demo URL. |
 

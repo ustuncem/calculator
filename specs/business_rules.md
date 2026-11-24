@@ -31,7 +31,7 @@ The product limits are digits, operands and nesting. There is no separate charac
 
 Test valid JSON padded with whitespace to exactly 4,096 and 4,097 bytes. The first should reach evaluation and the second should receive 413. Independently test 40 versus 41 operands and 32 versus 33 groups using small bodies. This distinguishes a transport rejection from a calculator rule failure.
 
-**Proposed wire mapping.** Use Problem Details JSON with a stable code. Expression errors include a zero-based start and exclusive end within the decoded expression. Use UTF-16 code units for compatibility with JavaScript string slicing. An end-of-input span has equal start and end. Body-level failures have no expression span.
+**Wire mapping.** Use Problem Details JSON. Each problem type has a stable `code` and a documented `type` URI of the form `/problems/{code}`, resolved against the API origin. The `title` gives a short, human-readable summary that stays the same for each type. Use `type` or `code` for programmatic handling. Expression errors include a zero-based start and exclusive end within the decoded expression. Use UTF-16 code units for compatibility with JavaScript string slicing. An end-of-input span has equal start and end. Body-level failures have no expression span.
 
 | Condition | HTTP | Suggested code or location |
 | --- | --- | --- |

@@ -1,0 +1,35 @@
+name: Calculator CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Build and test the Docker image
+        run: docker compose up --build --exit-code-from verify
+
+      - name: Collect the OpenAPI spec and generated Postman requests
+        run: docker compose cp verify:/work/postman ./postman-contract
+
+      - uses: actions/upload-artifact@v6
+        with:
+          name: postman-contract
+          path: postman-contract/
+          include-hidden-files: true
+          if-no-files-found: error
+
+      - name: Stop test containers
+        if: always()
+        run: docker compose down

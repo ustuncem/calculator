@@ -6,10 +6,12 @@ This phase defines the API and the behavior the existing Figma design can rely o
 
 ## Stack and responsibilities
 
-- **Go, Chi and Huma.** Chi routes requests. Huma describes the typed JSON contract and generates OpenAPI. The HTTP layer validates requests and translates calculator errors into HTTP responses.
-- **Calculator package.** A small arithmetic parser owns the grammar, limits, precedence and evaluation. Keep it independent of HTTP and framework packages. Exact rational arithmetic, for example Go’s standard `math/big.Rat` behind a decimal-only lexer, is a proposed implementation for the four basic operations. The externally observable precision rules are binding.
+- **Shared HTTP server.** Chi routes requests and Huma generates OpenAPI. The common server owns JSON handling, body-limit enforcement, health, documentation, and the Problem Details format.
+- **Calculator HTTP port.** The port defines the calculate request and response, configures its body size limit, calls the calculation use case, and translates calculator errors into HTTP responses.
+- **Calculation use case.** The application layer accepts an expression and returns a canonical result or a calculator error without relying on HTTP.
+- **Expression domain.** A decimal-only lexer and parser own the grammar, limits, and precedence. Evaluation uses Go’s `math/big.Rat` for exact arithmetic. The domain is independent of HTTP and application code.
 - **React and TypeScript.** The client assembles expressions, sends them to the API, displays the returned string, and marks rounded results. Keypad symbols such as × and ÷ map to the API spellings `*` and `/`.
-- **Tests.** Use Go table tests for arithmetic and grammar, `httptest` for the real router, fuzz tests for parser invariants, and an architecture check for package imports. A Postman collection should exercise the same contract against local and deployed environments.
+- **Tests.** Use Go domain tests for arithmetic, grammar, expression limits and fuzz invariants. Use the Postman collection to exercise the API contract against local and deployed environments.
 - **Hosting.** Package the Go API with a checked-in Dockerfile and use it for both local container runs and deployment as one stateless service on Railway. Startup configuration, timeouts, logging and shutdown belong in the server. Calculation requires neither persistence nor calls to another service. Measure throughput and latency on a stated workload before making capacity claims.
 
 ## Public interface

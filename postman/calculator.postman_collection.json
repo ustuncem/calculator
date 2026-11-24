@@ -1,0 +1,908 @@
+{
+  "info": {
+    "name": "Calculator API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:8080"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/health"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Health returns HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Exact decimal addition",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/calculate",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"expression\":\"0.1 + 0.2\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Returns HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Returns the expected decimal and rounding flag', () => {",
+              "    pm.expect(pm.response.json()).to.eql({\"result\":\"0.3\",\"rounded\":false});",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Grouped arithmetic",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/calculate",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"expression\":\"-(2.5 + 1.5) / 2\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Returns HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Returns the expected decimal and rounding flag', () => {",
+              "    pm.expect(pm.response.json()).to.eql({\"result\":\"-2\",\"rounded\":false});",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Subtraction",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/calculate",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"expression\":\"12 - 7\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Returns HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Returns the expected decimal and rounding flag', () => {",
+              "    pm.expect(pm.response.json()).to.eql({\"result\":\"5\",\"rounded\":false});",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Exact intermediate arithmetic",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/calculate",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"expression\":\"(1 / 3) * 3\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Returns HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Returns the expected decimal and rounding flag', () => {",
+              "    pm.expect(pm.response.json()).to.eql({\"result\":\"1\",\"rounded\":false});",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Rounded repeating decimal",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/calculate",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"expression\":\"2 / 3\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Returns HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Returns the expected decimal and rounding flag', () => {",
+              "    pm.expect(pm.response.json()).to.eql({\"result\":\"0.666666666666667\",\"rounded\":true});",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Missing operand before evaluation",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/calculate",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"expression\":\"1 / 0 +\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Returns HTTP 422', () => pm.response.to.have.status(422));",
+              "pm.test('Returns Problem Details with the expected type, title, code and span', () => {",
+              "    pm.expect(pm.response.headers.get('Content-Type')).to.eql('application/problem+json');",
+              "    const problem = pm.response.json();",
+              "    pm.expect(problem.code).to.eql('expected_operand');",
+              "    pm.expect(problem.type).to.eql('/problems/expected_operand');",
+              "    pm.expect(problem.title).to.eql('Expected an operand');",
+              "    pm.expect([problem.start, problem.end]).to.eql([7, 7]);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Division by zero at the slash",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/calculate",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"expression\":\"8 / (3 - 3)\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Returns HTTP 422', () => pm.response.to.have.status(422));",
+              "pm.test('Returns Problem Details with the expected type, title, code and span', () => {",
+              "    pm.expect(pm.response.headers.get('Content-Type')).to.eql('application/problem+json');",
+              "    const problem = pm.response.json();",
+              "    pm.expect(problem.code).to.eql('division_by_zero');",
+              "    pm.expect(problem.type).to.eql('/problems/division_by_zero');",
+              "    pm.expect(problem.title).to.eql('Division by zero');",
+              "    pm.expect([problem.start, problem.end]).to.eql([2, 3]);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "UTF-16 span for an astral character",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/calculate",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"expression\":\"1 + 🧮\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Returns HTTP 422', () => pm.response.to.have.status(422));",
+              "pm.test('Returns Problem Details with the expected type, title, code and span', () => {",
+              "    pm.expect(pm.response.headers.get('Content-Type')).to.eql('application/problem+json');",
+              "    const problem = pm.response.json();",
+              "    pm.expect(problem.code).to.eql('invalid_token');",
+              "    pm.expect(problem.type).to.eql('/problems/invalid_token');",
+              "    pm.expect(problem.title).to.eql('Invalid token');",
+              "    pm.expect([problem.start, problem.end]).to.eql([4, 6]);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Accepts 15 digits",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/calculate",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"expression\":\"123456789012345\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Returns HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Returns the expected decimal and rounding flag', () => {",
+              "    pm.expect(pm.response.json()).to.eql({\"result\":\"123456789012345\",\"rounded\":false});",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Rejects 16 digits",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/calculate",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"expression\":\"1234567890123456\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Returns HTTP 422', () => pm.response.to.have.status(422));",
+              "pm.test('Returns Problem Details with the expected type, title, code and span', () => {",
+              "    pm.expect(pm.response.headers.get('Content-Type')).to.eql('application/problem+json');",
+              "    const problem = pm.response.json();",
+              "    pm.expect(problem.code).to.eql('too_many_digits');",
+              "    pm.expect(problem.type).to.eql('/problems/too_many_digits');",
+              "    pm.expect(problem.title).to.eql('Too many digits');",
+              "    pm.expect([problem.start, problem.end]).to.eql([15, 16]);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Accepts 40 operands in a 639-character expression",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/calculate",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"expression\":\"100000000000000+100000000000000+100000000000000+100000000000000+100000000000000+100000000000000+100000000000000+100000000000000+100000000000000+100000000000000+100000000000000+100000000000000+100000000000000+100000000000000+100000000000000+100000000000000+100000000000000+100000000000000+100000000000000+100000000000000+100000000000000+100000000000000+100000000000000+100000000000000+100000000000000+100000000000000+100000000000000+100000000000000+100000000000000+100000000000000+100000000000000+100000000000000+100000000000000+100000000000000+100000000000000+100000000000000+100000000000000+100000000000000+100000000000000+100000000000000\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Returns HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Returns the expected decimal and rounding flag', () => {",
+              "    pm.expect(pm.response.json()).to.eql({\"result\":\"4000000000000000\",\"rounded\":false});",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Rejects the 41st operand",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/calculate",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"expression\":\"1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+12.\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Returns HTTP 422', () => pm.response.to.have.status(422));",
+              "pm.test('Returns Problem Details with the expected type, title, code and span', () => {",
+              "    pm.expect(pm.response.headers.get('Content-Type')).to.eql('application/problem+json');",
+              "    const problem = pm.response.json();",
+              "    pm.expect(problem.code).to.eql('too_many_operands');",
+              "    pm.expect(problem.type).to.eql('/problems/too_many_operands');",
+              "    pm.expect(problem.title).to.eql('Too many operands');",
+              "    pm.expect([problem.start, problem.end]).to.eql([80, 83]);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Accepts 32 nested groups",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/calculate",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"expression\":\"((((((((((((((((((((((((((((((((1))))))))))))))))))))))))))))))))\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Returns HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Returns the expected decimal and rounding flag', () => {",
+              "    pm.expect(pm.response.json()).to.eql({\"result\":\"1\",\"rounded\":false});",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Rejects the 33rd nested group",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/calculate",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"expression\":\"(((((((((((((((((((((((((((((((((1)))))))))))))))))))))))))))))))))\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Returns HTTP 422', () => pm.response.to.have.status(422));",
+              "pm.test('Returns Problem Details with the expected type, title, code and span', () => {",
+              "    pm.expect(pm.response.headers.get('Content-Type')).to.eql('application/problem+json');",
+              "    const problem = pm.response.json();",
+              "    pm.expect(problem.code).to.eql('nesting_limit_exceeded');",
+              "    pm.expect(problem.type).to.eql('/problems/nesting_limit_exceeded');",
+              "    pm.expect(problem.title).to.eql('Nesting limit exceeded');",
+              "    pm.expect([problem.start, problem.end]).to.eql([32, 33]);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Accepts 4096 JSON bytes",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/calculate",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"expression\": \"0.1 + 0.2\"                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 \n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Returns HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Returns the expected decimal and rounding flag', () => {",
+              "    pm.expect(pm.response.json()).to.eql({\"result\":\"0.3\",\"rounded\":false});",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Rejects 4097 JSON bytes before evaluation",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/calculate",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"expression\": \"1 / 0\"                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      \n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Returns HTTP 413', () => pm.response.to.have.status(413));",
+              "pm.test('Returns Problem Details with the expected type, title, code and span', () => {",
+              "    pm.expect(pm.response.headers.get('Content-Type')).to.eql('application/problem+json');",
+              "    const problem = pm.response.json();",
+              "    pm.expect(problem.code).to.eql('body_too_large');",
+              "    pm.expect(problem.type).to.eql('/problems/body_too_large');",
+              "    pm.expect(problem.title).to.eql('Request body too large');",
+              "    pm.expect(problem).not.to.have.property('start');",
+              "    pm.expect(problem).not.to.have.property('end');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Precision and error precedence",
+      "item": [
+        {
+          "name": "Nested arithmetic with six 10-digit literals",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/calculate",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"expression\":\"((1234567890 + 9876543210) * (3000000000 - 2000000000)) / (5000000000 / 2500000000)\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Returns HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Uses application/json', () => pm.expect(pm.response.headers.get('Content-Type')).to.eql('application/json'));",
+                  "pm.test('Returns the exact result string and rounding flag', () => {",
+                  "    pm.expect(pm.response.json()).to.eql({\"result\":\"5555555550000000000\",\"rounded\":false});",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Three 15-digit integers produce an exact 30-digit result",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/calculate",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"expression\":\"999999999999999 * 999999999999999 + 999999999999999\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Returns HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Uses application/json', () => pm.expect(pm.response.headers.get('Content-Type')).to.eql('application/json'));",
+                  "pm.test('Returns the exact result string and rounding flag', () => {",
+                  "    pm.expect(pm.response.json()).to.eql({\"result\":\"999999999999999000000000000000\",\"rounded\":false});",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "15-digit decimal literals produce 28 exact fractional places",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/calculate",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"expression\":\"0.00000000000001 * 0.00000000000002\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Returns HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Uses application/json', () => pm.expect(pm.response.headers.get('Content-Type')).to.eql('application/json'));",
+                  "pm.test('Returns the exact result string and rounding flag', () => {",
+                  "    pm.expect(pm.response.json()).to.eql({\"result\":\"0.0000000000000000000000000002\",\"rounded\":false});",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "15-digit operands produce a rounded repeating result",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/calculate",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"expression\":\"999999999999999 / (900000000000007 - 900000000000000)\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Returns HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Uses application/json', () => pm.expect(pm.response.headers.get('Content-Type')).to.eql('application/json'));",
+                  "pm.test('Returns the exact result string and rounding flag', () => {",
+                  "    pm.expect(pm.response.json()).to.eql({\"result\":\"142857142857142.714285714285714\",\"rounded\":true});",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Two zero divisors report the first failure",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/calculate",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"expression\":\"2 / (3 - 3) + 4 / -0\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Returns HTTP 422', () => pm.response.to.have.status(422));",
+                  "pm.test('Uses application/problem+json', () => pm.expect(pm.response.headers.get('Content-Type')).to.eql('application/problem+json'));",
+                  "pm.test('Returns one problem with the expected UTF-16 span', () => {",
+                  "    pm.expect(pm.response.json()).to.eql({\"type\":\"/problems/division_by_zero\",\"title\":\"Division by zero\",\"status\":422,\"detail\":\"The divisor evaluates to zero.\",\"code\":\"division_by_zero\",\"start\":2,\"end\":3});",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Fixing the first divisor exposes the second failure",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/calculate",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"expression\":\"2 / (3 - 2) + 4 / -0\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Returns HTTP 422', () => pm.response.to.have.status(422));",
+                  "pm.test('Uses application/problem+json', () => pm.expect(pm.response.headers.get('Content-Type')).to.eql('application/problem+json'));",
+                  "pm.test('Returns one problem with the expected UTF-16 span', () => {",
+                  "    pm.expect(pm.response.json()).to.eql({\"type\":\"/problems/division_by_zero\",\"title\":\"Division by zero\",\"status\":422,\"detail\":\"The divisor evaluates to zero.\",\"code\":\"division_by_zero\",\"start\":16,\"end\":17});",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Trailing syntax error takes precedence over two zero divisors",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/calculate",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"expression\":\"2 / (3 - 3) + 4 / -0 +\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Returns HTTP 422', () => pm.response.to.have.status(422));",
+                  "pm.test('Uses application/problem+json', () => pm.expect(pm.response.headers.get('Content-Type')).to.eql('application/problem+json'));",
+                  "pm.test('Returns one problem with the expected UTF-16 span', () => {",
+                  "    pm.expect(pm.response.json()).to.eql({\"type\":\"/problems/expected_operand\",\"title\":\"Expected an operand\",\"status\":422,\"detail\":\"Enter a number or parenthesized expression.\",\"code\":\"expected_operand\",\"start\":22,\"end\":22});",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
