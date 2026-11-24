@@ -903,6 +903,243 @@
           ]
         }
       ]
+    },
+    {
+      "name": "Continuation after equals",
+      "description": "Run this folder to demonstrate three pairs of equals presses. Each second request groups the original expression and appends the next operation. Both request bodies are shown in full so you can also send them individually.",
+      "item": [
+        {
+          "name": "Continue a rounded result",
+          "item": [
+            {
+              "name": "Evaluate 1 / 3",
+              "request": {
+                "method": "POST",
+                "url": "{{baseUrl}}/api/v1/calculate",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"expression\":\"1 / 3\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Returns HTTP 200', () => pm.response.to.have.status(200));",
+                      "pm.test('Returns the expected decimal and rounding flag', () => {",
+                      "    pm.expect(pm.response.json()).to.eql({\"result\":\"0.333333333333333\",\"rounded\":true});",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Continue with * 3",
+              "request": {
+                "method": "POST",
+                "url": "{{baseUrl}}/api/v1/calculate",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"expression\":\"(1 / 3) * 3\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Returns HTTP 200', () => pm.response.to.have.status(200));",
+                      "pm.test('Returns the expected decimal and rounding flag', () => {",
+                      "    pm.expect(pm.response.json()).to.eql({\"result\":\"1\",\"rounded\":false});",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Preserve grouping after addition",
+          "item": [
+            {
+              "name": "Evaluate 2 + 3",
+              "request": {
+                "method": "POST",
+                "url": "{{baseUrl}}/api/v1/calculate",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"expression\":\"2 + 3\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Returns HTTP 200', () => pm.response.to.have.status(200));",
+                      "pm.test('Returns the expected decimal and rounding flag', () => {",
+                      "    pm.expect(pm.response.json()).to.eql({\"result\":\"5\",\"rounded\":false});",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Continue with * 4",
+              "request": {
+                "method": "POST",
+                "url": "{{baseUrl}}/api/v1/calculate",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"expression\":\"(2 + 3) * 4\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Returns HTTP 200', () => pm.response.to.have.status(200));",
+                      "pm.test('Returns the expected decimal and rounding flag', () => {",
+                      "    pm.expect(pm.response.json()).to.eql({\"result\":\"20\",\"rounded\":false});",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Continue a 16-digit result",
+          "item": [
+            {
+              "name": "Evaluate 999999999999999 + 1",
+              "request": {
+                "method": "POST",
+                "url": "{{baseUrl}}/api/v1/calculate",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"expression\":\"999999999999999 + 1\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Returns HTTP 200', () => pm.response.to.have.status(200));",
+                      "pm.test('Returns the expected decimal and rounding flag', () => {",
+                      "    pm.expect(pm.response.json()).to.eql({\"result\":\"1000000000000000\",\"rounded\":false});",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Continue with - 1",
+              "request": {
+                "method": "POST",
+                "url": "{{baseUrl}}/api/v1/calculate",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"expression\":\"(999999999999999 + 1) - 1\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Returns HTTP 200', () => pm.response.to.have.status(200));",
+                      "pm.test('Returns the expected decimal and rounding flag', () => {",
+                      "    pm.expect(pm.response.json()).to.eql({\"result\":\"999999999999999\",\"rounded\":false});",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
     }
   ]
 }
