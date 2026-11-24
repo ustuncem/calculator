@@ -25,7 +25,7 @@ jobs:
       - name: Smoke-test the frontend
         run: |
           docker run -d --name web -e PORT=8181 -p 127.0.0.1:8181:8181 calculator-web:ci
-          curl --fail --retry 10 --retry-connrefused http://127.0.0.1:8181/ | grep -F '<title>Calculator starter</title>'
+          sh frontend/smoke-test.sh http://127.0.0.1:8181
 
   deploy:
     if: github.event_name == 'push'
