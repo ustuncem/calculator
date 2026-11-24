@@ -40,7 +40,7 @@ curl --fail --silent --show-error http://127.0.0.1:8080/api/v1/calculate \
 
 Results are decimal strings. Repeating decimals round to 15 fractional places and return `"rounded":true`. Invalid expressions return HTTP 422 with a stable error `code` and a UTF-16 span when the error points to part of the expression. JSON bodies over 4,096 bytes return HTTP 413. For grammar, limits, and error examples, see the [business rules](specs/business_rules.md).
 
-To try the API in Postman, import the collection and set `baseUrl` if the service uses a different URL. [Calculator API collection](postman/calculator.postman_collection.json)
+In Postman, import the [Calculator API collection](postman/calculator.postman_collection.json) and both environments. Select [Calculator Local](postman/local.postman_environment.json) or [Calculator Production](postman/production.postman_environment.json) in the environment picker. Each request uses the selected environment’s `baseUrl`.
 
 ## Tests
 
@@ -65,11 +65,15 @@ go test -run '^$' -fuzz '^FuzzEvaluate$' -fuzztime 10s -parallel 4 ./internal/ca
 To run the Postman collection against the running API from the repository root, use the Postman CLI.
 
 ```sh
-postman collection run postman/calculator.postman_collection.json --no-report-events
+postman collection run postman/calculator.postman_collection.json -e postman/local.postman_environment.json --no-report-events
 ```
 
 ## Deployment
 
 The `Calculator CI` workflow runs on pull requests and pushes to `main`. After a successful run on `main`, the deployment job uploads that commit to Railway and waits for the deployment result. Set the `RAILWAY_TOKEN` GitHub Actions secret to the Railway Project Token scoped to `production`. Railway builds from `/backend` and checks `/health` before routing traffic to the new release. GitHub Actions can send failed-run notifications by email or on GitHub.
 
-Use the same Postman collection with `baseUrl` set for local development or CI. If you add a production Postman environment, point it at the Railway URL and use it for smoke checks such as `GET /health`. The full regression suite runs against the isolated Compose service.
+To smoke-test production, run the collection’s `Health` request against Railway.
+
+```sh
+postman collection run postman/calculator.postman_collection.json -e postman/production.postman_environment.json -i Health --no-report-events
+```
