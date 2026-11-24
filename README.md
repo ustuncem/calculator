@@ -70,6 +70,6 @@ postman collection run postman/calculator.postman_collection.json --no-report-ev
 
 ## Deployment
 
-The `Calculator CI` workflow runs on pull requests and pushes to `main`. After a successful run on `main`, the workflow advances the `production` branch to the tested commit. Railway follows `production`, builds from `/backend`, and checks `/health` before routing traffic to the new release. The `production` branch is for CI promotion. GitHub Actions can send failed-run notifications by email or on GitHub, and Railway can send deployment failure notifications.
+The `Calculator CI` workflow runs on pull requests and pushes to `main`. After a successful run on `main`, the deployment job uploads that commit to Railway and waits for the deployment result. Set the `RAILWAY_TOKEN` GitHub Actions secret to the Railway Project Token scoped to `production`. Railway builds from `/backend` and checks `/health` before routing traffic to the new release. GitHub Actions can send failed-run notifications by email or on GitHub.
 
 Use the same Postman collection with `baseUrl` set for local development or CI. If you add a production Postman environment, point it at the Railway URL and use it for smoke checks such as `GET /health`. The full regression suite runs against the isolated Compose service.

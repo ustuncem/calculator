@@ -34,22 +34,41 @@ jobs:
         if: always()
         run: docker compose down
 
-  promote:
+  deploy:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: verify
+    environment: production
+    concurrency:
+      group: railway-production
+      queue: max
     runs-on: ubuntu-latest
-    timeout-minutes: 5
-    permissions:
-      contents: write
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v6
         with:
-          fetch-depth: 0
+          persist-credentials: false
 
-      - name: Advance the Railway deployment branch
+      - name: Install the Railway CLI
+        run: npm install --prefix "$RUNNER_TEMP/railway-cli" @railway/cli@5.75.0
+
+      - name: Deploy the verified commit to Railway
+        shell: bash
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
-          if ! git push origin HEAD:refs/heads/production; then
-            # A newer successful run may already have promoted this commit.
-            git fetch origin production
-            git merge-base --is-ancestor HEAD FETCH_HEAD
+          latest=$(git ls-remote --exit-code origin refs/heads/main | cut -f1)
+          if [ "$latest" != "$GITHUB_SHA" ]; then
+            echo "A newer commit is on main. Skipping this deployment."
+            exit 0
           fi
+
+          if [ -z "$RAILWAY_TOKEN" ]; then
+            echo "::error::Set RAILWAY_TOKEN to the Railway production project token."
+            exit 1
+          fi
+
+          "$RUNNER_TEMP/railway-cli/node_modules/.bin/railway" up --ci --json \
+            --project a474cdf0-ca6f-405e-a962-f8d60ea92f72 \
+            --environment production --service calculator-api \
+            --message "GitHub Actions $GITHUB_SHA" | tee "$RUNNER_TEMP/railway-deploy.jsonl"
+          jq --exit-status --slurp 'any(.[]; .status? == "success")' "$RUNNER_TEMP/railway-deploy.jsonl"
