@@ -33,3 +33,23 @@ jobs:
       - name: Stop test containers
         if: always()
         run: docker compose down
+
+  promote:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Advance the Railway deployment branch
+        run: |
+          if ! git push origin HEAD:refs/heads/production; then
+            # A newer successful run may already have promoted this commit.
+            git fetch origin production
+            git merge-base --is-ancestor HEAD FETCH_HEAD
+          fi
