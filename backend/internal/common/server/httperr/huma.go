@@ -1,7 +1,9 @@
 package httperr
 
 import (
+	"errors"
 	"maps"
+	"net/http"
 
 	"github.com/danielgtaylor/huma/v2"
 )
@@ -12,10 +14,15 @@ func init() {
 	huma.NewError = func(status int, detail string, _ ...error) huma.StatusError {
 		return statusProblem(status, detail)
 	}
-	huma.NewErrorWithContext = func(ctx huma.Context, status int, detail string, _ ...error) huma.StatusError {
+	huma.NewErrorWithContext = func(ctx huma.Context, status int, detail string, causes ...error) huma.StatusError {
 		if op := ctx.Operation(); op != nil {
 			definitions, _ := op.Metadata[requestProblemsKey].(map[int]Definition)
 			if definition, ok := definitions[status]; ok {
+				if status == http.StatusUnprocessableEntity && len(causes) > 0 {
+					if field, ok := errors.AsType[*huma.ErrorDetail](causes[0]); ok {
+						return definition.New(field.Location + ": " + field.Message)
+					}
+				}
 				return definition.New("")
 			}
 		}

@@ -10,7 +10,13 @@ import (
 	"calculator/backend/internal/common/server/httperr"
 
 	"github.com/danielgtaylor/huma/v2"
+	"github.com/danielgtaylor/huma/v2/adapters/humachi"
 )
+
+func init() {
+	// Match JSON property names exactly as published in OpenAPI.
+	huma.ValidateStrictCasing = true
+}
 
 func RegisterJSON[I, O any](api huma.API, op huma.Operation, maxBytes int64, invalidInput httperr.Definition, handle func(context.Context, *I) (*O, error)) {
 	op.MaxBodyBytes = maxBytes + 1
@@ -27,6 +33,9 @@ func requireJSON(api huma.API) func(huma.Context, func(huma.Context)) {
 			_ = huma.WriteErr(api, ctx, http.StatusUnsupportedMediaType, "")
 			return
 		}
+		// Give Huma's decoder the same media type the middleware accepted.
+		request, _ := humachi.Unwrap(ctx)
+		request.Header.Set("Content-Type", mediaType)
 		next(ctx)
 	}
 }
