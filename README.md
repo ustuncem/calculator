@@ -1,4 +1,4 @@
-# Calculator API
+# Calculator
 
 A Go API that evaluates decimal expressions using addition, subtraction, multiplication, and division.
 
@@ -21,6 +21,18 @@ go run ./internal/calculator
 ```
 
 The API defaults to port `8080`. Set `PORT` to configure the server's listening port.
+
+## Frontend
+
+The [React starter](https://calculator-web-production-710b13d9.up.railway.app) uses TypeScript, Vite and Tailwind. Start the development server with Node 24 and npm.
+
+```sh
+cd frontend
+npm ci
+npm run dev
+```
+
+Run `npm run lint` and `npm run build` in the same directory to verify a production build.
 
 ## API usage
 
@@ -70,7 +82,18 @@ postman collection run postman/calculator.postman_collection.json -e postman/loc
 
 ## Deployment
 
-The `Calculator CI` workflow runs on pull requests and pushes to `main`. After a successful run on `main`, the deployment job uploads that commit to Railway and waits for the deployment result. Set the `RAILWAY_TOKEN` GitHub Actions secret to the Railway Project Token scoped to `production`. Railway builds from `/backend` and checks `/health` before routing traffic to the new release. GitHub Actions can send failed-run notifications by email or on GitHub.
+GitHub Actions selects builds by the files changed on a pull request or push to `main`.
+
+| Changed paths | Build |
+| --- | --- |
+| `frontend/**` | Lint, type-check, build and smoke-test the React image |
+| `backend/**` | Build the Go image and run the Postman contract tests |
+| Both folders | Run both workflows independently |
+| Only files outside those folders | Skip both builds |
+
+After a successful push build on `main`, the matching workflow uploads that commit to Railway using the production `RAILWAY_TOKEN` project secret. Each service has its own deployment queue. A newer commit supersedes a pending deployment only when its service directory differs.
+
+Railway builds `calculator-web` from `/frontend` and checks `/`. It builds `calculator-api` from `/backend` and checks `/health`. Each service watches its own directory for any Railway Git-triggered deployments.
 
 To smoke-test production, run the collection’s `Health` request against Railway.
 

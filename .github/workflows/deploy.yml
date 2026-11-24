@@ -1,0 +1,55 @@
+name: Deploy to Railway
+
+on:
+  workflow_call:
+    inputs:
+      directory:
+        required: true
+        type: string
+      service:
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    environment: production
+    concurrency:
+      group: railway-production-${{ inputs.service }}
+      queue: max
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Install the Railway CLI
+        run: npm install --prefix "$RUNNER_TEMP/railway-cli" @railway/cli@5.75.0
+
+      - name: Deploy the verified commit to Railway
+        shell: bash
+        env:
+          SERVICE: ${{ inputs.service }}
+          GH_TOKEN: ${{ github.token }}
+          DIRECTORY: ${{ inputs.directory }}
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          latest=$(gh api "repos/$GITHUB_REPOSITORY/git/trees/main" | jq -r --arg dir "$DIRECTORY" '.tree[] | select(.path == $dir) | .sha')
+          if [ "$(git rev-parse "HEAD:$DIRECTORY")" != "$latest" ]; then
+            echo "A newer version of $DIRECTORY is on main. Skipping this deployment."
+            exit 0
+          fi
+
+          if [ -z "$RAILWAY_TOKEN" ]; then
+            echo "::error::Set RAILWAY_TOKEN to the Railway production project token."
+            exit 1
+          fi
+
+          "$RUNNER_TEMP/railway-cli/node_modules/.bin/railway" up --ci --json \
+            --project a474cdf0-ca6f-405e-a962-f8d60ea92f72 \
+            --environment production --service "$SERVICE" \
+            --message "GitHub Actions $GITHUB_SHA" | tee "$RUNNER_TEMP/railway-deploy.jsonl"
+          jq --exit-status --slurp 'any(.[]; .status? == "success")' "$RUNNER_TEMP/railway-deploy.jsonl"

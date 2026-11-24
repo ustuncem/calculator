@@ -1,0 +1,37 @@
+name: Frontend CI
+
+on:
+  pull_request:
+    paths: ['frontend/**']
+  push:
+    branches: [main]
+    paths: ['frontend/**']
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Build the frontend image
+        run: docker build -t calculator-web:ci frontend
+
+      - name: Smoke-test the frontend
+        run: |
+          docker run -d --name web -e PORT=8181 -p 127.0.0.1:8181:8181 calculator-web:ci
+          curl --fail --retry 10 --retry-connrefused http://127.0.0.1:8181/ | grep -F '<title>Calculator starter</title>'
+
+  deploy:
+    if: github.event_name == 'push'
+    needs: verify
+    uses: ./.github/workflows/deploy.yml
+    with:
+      directory: frontend
+      service: calculator-web
+    secrets: inherit
