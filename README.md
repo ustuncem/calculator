@@ -4,7 +4,15 @@ A Go API that evaluates decimal expressions using addition, subtraction, multipl
 
 ## Setup
 
-From the repository root, build and start the API with Docker.
+From the repository root, start the website and API with Docker Compose.
+
+```sh
+docker compose up --build
+```
+
+Open [the website](http://localhost:3000). The Postman checks run once against the API on the Compose network. Use `docker compose down` to stop the stack.
+
+To run the API by itself and publish it on port 8080, use:
 
 ```sh
 docker build -t calculator-api:local backend
@@ -59,7 +67,7 @@ In Postman, import the [Calculator API collection](postman/calculator.postman_co
 Run the same verification locally and in GitHub Actions from the repository root.
 
 ```sh
-docker compose up --build --exit-code-from verify
+docker compose up --build --exit-code-from verify verify
 docker compose down
 ```
 

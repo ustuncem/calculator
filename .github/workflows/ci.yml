@@ -20,7 +20,7 @@ jobs:
           persist-credentials: false
 
       - name: Build and test the Docker image
-        run: docker compose up --build --exit-code-from verify
+        run: docker compose up --build --exit-code-from verify verify
 
       - name: Collect the OpenAPI spec and generated Postman requests
         run: docker compose cp verify:/work/postman ./postman-contract
