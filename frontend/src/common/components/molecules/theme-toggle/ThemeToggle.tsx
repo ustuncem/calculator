@@ -2,6 +2,7 @@ import { useLayoutEffect, useState } from 'react'
 
 import moon from '@common/assets/moon.svg'
 import sun from '@common/assets/sun.svg'
+import { AnimatedButton } from '@common/components/atoms/AnimatedButton'
 import { ShadowBox } from '@common/components/atoms/shadow-box/ShadowBox'
 
 import './ThemeToggle.css'
@@ -34,23 +35,20 @@ export default function ThemeToggle() {
   }
 
   return (
-    <ShadowBox
-      render={
-        <button
-          type="button"
-          aria-label="Dark mode"
-          aria-pressed={darkMode}
-          onClick={toggleTheme}
-        />
-      }
-      className="theme-toggle"
+    <AnimatedButton
+      aria-label="Dark mode"
+      aria-pressed={darkMode}
+      onPress={toggleTheme}
+      className="rounded-xl"
     >
-      <span className="relative block size-5" aria-hidden="true">
-        <img className="theme-moon" src={moon} alt="Crescent moon" />
-        <span className="theme-sun">
-          <img src={sun} alt="Sun" />
+      <ShadowBox render={<span />} className="grid size-11 place-items-center">
+        <span className="relative block size-5" aria-hidden="true">
+          <img className="theme-moon" src={moon} alt="Crescent moon" />
+          <span className="theme-sun">
+            <img src={sun} alt="Sun" />
+          </span>
         </span>
-      </span>
-    </ShadowBox>
+      </ShadowBox>
+    </AnimatedButton>
   )
 }
