@@ -28,7 +28,7 @@ export function AnimatedButton({
       onClick={onPress}
       render={
         <m.button
-          whileTap={disabled || reduceMotion ? undefined : { scale: 0.95 }}
+          whileTap={disabled || reduceMotion ? undefined : { scale: 0.9 }}
           transition={{ duration: 0.15, ease: 'easeOut' }}
         />
       }
