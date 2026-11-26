@@ -21,8 +21,6 @@ function importOrder(
   ]
 }
 
-// Each directory directly under src is a package.
-// Compare imports to the importing directory so aliases and ../ agree.
 const packageImportRules = globSync('src/*/**/', {
   cwd: import.meta.dirname,
 }).map((directory) => {
@@ -52,16 +50,5 @@ export default defineConfig({
     'react/only-export-components': ['warn', { allowConstantExport: true }],
     'import-sort/imports': importOrder(),
   },
-  overrides: [
-    ...packageImportRules,
-    {
-      files: ['src/common/components/ui/button.tsx'],
-      rules: {
-        'react/only-export-components': [
-          'warn',
-          { allowExportNames: ['buttonVariants'] },
-        ],
-      },
-    },
-  ],
+  overrides: packageImportRules,
 })

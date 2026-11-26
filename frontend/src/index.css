@@ -32,7 +32,6 @@
   --color-secondary-900: #231f15;
   --color-secondary-950: #100d06;
 
-  /* Figma's operator gradient covers only part of the label's diagonal. */
   --background-image-gradient-purple: linear-gradient(
     to top left,
     #ce5dcb 11.8%,
