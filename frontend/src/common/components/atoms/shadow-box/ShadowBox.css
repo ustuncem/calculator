@@ -1,0 +1,22 @@
+.shadow-box {
+  --shadow-box-glow: var(--color-secondary-500);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background-color: color-mix(in srgb, var(--card) 50%, transparent);
+  box-shadow: 0 0 5px
+    color-mix(in srgb, var(--shadow-box-glow) 50%, transparent);
+  transition: none;
+}
+
+.dark .shadow-box {
+  --shadow-box-glow: var(--color-primary-400);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .shadow-box {
+    transition:
+      background-color 200ms ease,
+      border-color 200ms ease,
+      box-shadow 200ms ease;
+  }
+}

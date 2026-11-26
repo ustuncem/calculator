@@ -1,0 +1,49 @@
+.theme-toggle {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  cursor: pointer;
+}
+
+.theme-toggle:active {
+  translate: 0 1px;
+}
+
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
+
+.theme-moon,
+.theme-sun {
+  position: absolute;
+  inset: 0;
+}
+
+.theme-sun {
+  mask: url('@common/assets/sun-mask.svg') center / 20px 20px no-repeat;
+}
+
+.theme-sun img {
+  position: absolute;
+  top: 0.833px;
+  left: 0.833px;
+}
+
+.theme-sun,
+.dark .theme-moon {
+  opacity: 0;
+}
+
+.dark .theme-sun {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .theme-moon,
+  .theme-sun {
+    transition: opacity 200ms ease;
+  }
+}
