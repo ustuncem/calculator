@@ -1,5 +1,5 @@
-import Calculator from './calculator/components/Calculator'
+import Layout from '@common/components/templates/layout/Layout'
 
 export default function App() {
-  return <Calculator />
+  return <Layout />
 }

@@ -1,0 +1,20 @@
+.app-layout {
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+}
+
+.app-layout::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: center / 476px 884px repeat
+    image-set(
+      url('@common/assets/grain.webp') 1x,
+      url('@common/assets/grain@2x.webp') 2x
+    );
+  mix-blend-mode: luminosity;
+  opacity: 0.2;
+  pointer-events: none;
+}
