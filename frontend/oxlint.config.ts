@@ -21,17 +21,14 @@ function importOrder(
   ]
 }
 
-// A package is src/features/<name> or a shared directory such as src/common.
+// Each directory directly under src is a package.
 // Compare imports to the importing directory so aliases and ../ agree.
 const packageImportRules = globSync('src/*/**/', {
   cwd: import.meta.dirname,
 }).map((directory) => {
   const [, ...parts] = directory.split(sep)
-  const packageParts = parts.slice(0, parts[0] === 'features' ? 2 : 1)
-  const packagePath = packageParts
-    .join('/')
-    .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-  const levelsToExit = parts.length - packageParts.length + 1
+  const packagePath = parts[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const levelsToExit = parts.length
   const outsidePackage = `^(?:\\.\\./){${levelsToExit - 1}}\\.\\.(?:/|\\u0000|$)`
   const packageAliases = ['^@/' + packagePath + '(?:/|\\u0000|$)']
   if (packagePath === 'common') packageAliases.push('^@common(?:/|\\u0000|$)')
@@ -58,7 +55,7 @@ export default defineConfig({
   overrides: [
     ...packageImportRules,
     {
-      files: ['src/components/ui/button.tsx'],
+      files: ['src/common/components/ui/button.tsx'],
       rules: {
         'react/only-export-components': [
           'warn',
