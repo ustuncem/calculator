@@ -46,9 +46,9 @@ export default function ThemeToggle() {
       className="theme-toggle"
     >
       <span className="relative block size-5" aria-hidden="true">
-        <img className="theme-moon" src={moon} alt="" />
+        <img className="theme-moon" src={moon} alt="Crescent moon" />
         <span className="theme-sun">
-          <img src={sun} alt="" />
+          <img src={sun} alt="Sun" />
         </span>
       </span>
     </ShadowBox>
