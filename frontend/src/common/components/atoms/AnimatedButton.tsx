@@ -9,7 +9,7 @@ type AnimatedButtonProps = Omit<
   ComponentPropsWithoutRef<'button'>,
   'onClick'
 > & {
-  onPress: MouseEventHandler<HTMLButtonElement>
+  onPress?: MouseEventHandler<HTMLButtonElement>
 }
 
 export function AnimatedButton({

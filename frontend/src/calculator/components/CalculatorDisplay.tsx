@@ -1,8 +1,8 @@
 import { ShadowBox } from '@common/components/atoms/shadow-box/ShadowBox'
 
 import BackspaceButton from './atoms/BackspaceButton'
-import DisplayDivider from './atoms/DisplayDivider'
 import DisplayExpression from './atoms/DisplayExpression'
+import Divider from './atoms/Divider'
 
 type CalculatorDisplayProps = {
   expression: string
@@ -19,7 +19,7 @@ export default function CalculatorDisplay({
       className="flex min-w-0 flex-col justify-end gap-4 p-3"
     >
       <DisplayExpression value={expression} />
-      <DisplayDivider />
+      <Divider className="w-full" />
       <BackspaceButton disabled={!expression} onPress={onBackspace} />
     </ShadowBox>
   )
