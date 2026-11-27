@@ -24,7 +24,5 @@
 @media (min-width: 1024px) and (hover: hover) and (pointer: fine) {
   .app-layout::before {
     background-image: url('@common/assets/desktop-background.webp');
-    mix-blend-mode: normal;
-    opacity: 1;
   }
 }
