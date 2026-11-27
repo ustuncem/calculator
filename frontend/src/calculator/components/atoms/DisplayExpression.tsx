@@ -1,60 +1,25 @@
-import type { KeyboardEvent, RefObject } from 'react'
-
-import { useExpressionMirror } from '../../hooks/useExpressionMirror'
-import type { Span } from '../../utils/calculatorFeedback'
+import type { useExpressionEditor } from '../../hooks/useExpressionEditor'
 import ExpressionText from './ExpressionText'
 
 import './DisplayExpression.css'
 
-type DisplayExpressionProps = {
-  value: string
-  inputRef: RefObject<HTMLTextAreaElement | null>
-  caret: number
-  highlight?: Span
+type DisplayExpressionProps = ReturnType<
+  typeof useExpressionEditor
+>['expressionProps'] & {
   errorId?: string
-}
-
-function moveCaretToEdge(input: HTMLTextAreaElement, edge: 'Home' | 'End') {
-  const position = edge === 'End' ? input.value.length : 0
-  input.setSelectionRange(position, position)
-  input.scrollTop = edge === 'End' ? input.scrollHeight : 0
 }
 
 export default function DisplayExpression({
   value,
-  inputRef,
-  caret,
   highlight,
+  mirrorRef,
+  fieldProps,
   errorId,
 }: DisplayExpressionProps) {
-  const { mirrorRef, syncScroll } = useExpressionMirror(
-    inputRef,
-    value,
-    caret,
-    highlight,
-  )
-
-  function handleCaretKey(event: KeyboardEvent<HTMLTextAreaElement>) {
-    const { key, shiftKey, metaKey, ctrlKey, currentTarget } = event
-
-    if (key === 'Home' || key === 'End') {
-      event.preventDefault()
-      if (!shiftKey) moveCaretToEdge(currentTarget, key)
-      return
-    }
-
-    if (
-      (shiftKey && (key.startsWith('Arrow') || key.startsWith('Page'))) ||
-      ((metaKey || ctrlKey) && key.toLowerCase() === 'a')
-    ) {
-      event.preventDefault()
-    }
-  }
-
   return (
     <div className="expression-editor relative isolate grid min-h-[1lh] grid-rows-[minmax(0,1fr)] rounded-sm text-right text-2xl leading-[normal] font-medium tracking-[-0.04em] text-secondary-600 group-aria-busy:pointer-events-none group-aria-busy:opacity-0 dark:text-primary-400">
       <textarea
-        ref={inputRef}
+        {...fieldProps}
         aria-invalid={Boolean(errorId)}
         aria-describedby={errorId}
         aria-label="Expression"
@@ -63,18 +28,6 @@ export default function DisplayExpression({
         rows={1}
         inputMode="none"
         spellCheck={false}
-        onBeforeInput={(event) => event.preventDefault()}
-        // Calculator keys own edits. The editable surface supplies the native caret.
-        onChange={(event) => {
-          event.currentTarget.value = value
-        }}
-        onKeyDown={handleCaretKey}
-        onBlur={(event) => {
-          if (!window.matchMedia('(pointer: coarse)').matches) {
-            moveCaretToEdge(event.currentTarget, 'End')
-          }
-        }}
-        onScroll={syncScroll}
       />
       <span role="status" className="sr-only">
         {value || '0'}

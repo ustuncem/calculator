@@ -14,11 +14,7 @@ export function useCalculatorKeyboard(onKey: (key: CalculatorKey) => void) {
     )
       return
 
-    if (
-      event.key === 'Enter' &&
-      event.target instanceof HTMLButtonElement &&
-      !event.target.closest('[data-calculator]')
-    )
+    if (event.key === 'Enter' && event.target instanceof HTMLButtonElement)
       return
     const key = getKeyboardCalculatorKey(event.key)
     if (!key) return
