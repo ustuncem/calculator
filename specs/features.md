@@ -6,6 +6,7 @@
 | --- | --- |
 | Evaluate a complete expression in one API call | Posting `-(2.5 + 1.5) / 2` returns `{"result":"-2","rounded":false}`. |
 | Support all four required operations | The README or Postman collection demonstrates addition, subtraction, multiplication and division through the same endpoint. |
+| Calculate percentages | Postfix `%` divides the preceding value by 100. `200 + 10%` returns `"200.1"`. |
 | Preserve decimal precision | `0.1 + 0.2` returns exactly `"0.3"`. The client can distinguish a repeating result from an exact result. |
 | Explain a failed calculation | Invalid syntax and division by zero produce stable error codes and locations within the submitted expression. |
 | Bound public input | Test numeric literals of 15 and 16 digits, expressions with 40 and 41 operands, and nesting at 32 and 33 levels. Test the HTTP body boundary independently. |
@@ -20,7 +21,6 @@ The assignment also requires a responsive React client and frontend unit tests. 
 
 | Capability | Scope |
 | --- | --- |
-| Percentage | Postfix percentage with one meaning throughout an expression. |
 | Powers | Integer exponents, documented precedence and a bounded resource cost. |
 | Square root | Real roots, exact where possible, with an explicit approximation signal. |
 | Performance report | Record workload, concurrency, deployment resources, duration, throughput, latency percentiles and errors. |

@@ -15,7 +15,7 @@ type CalculateFunc func(string) (expression.Result, error)
 
 type calculateInput struct {
 	Body struct {
-		Expression string `json:"expression" minLength:"1" example:"0.1 + 0.2" doc:"Decimal arithmetic expression using +, -, *, / and parentheses."`
+		Expression string `json:"expression" minLength:"1" example:"0.1 + 0.2" doc:"Decimal arithmetic expression using +, -, *, /, parentheses and postfix % (divide the preceding value by 100)."`
 	}
 }
 

@@ -52,6 +52,10 @@ func (p *parser) operand(depth int) error {
 	if err := p.atom(depth); err != nil {
 		return err
 	}
+	if p.current.kind == '%' {
+		p.program = append(p.program, p.current)
+		p.advance()
+	}
 	if sign.kind == '-' {
 		sign.kind = negate
 		p.program = append(p.program, sign)

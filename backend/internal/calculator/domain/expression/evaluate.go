@@ -25,6 +25,9 @@ func evaluateProgram(program []token) (Result, error) {
 		case negate:
 			stack[top].Neg(stack[top])
 			continue
+		case '%':
+			stack[top].Quo(stack[top], big.NewRat(100, 1))
+			continue
 		case '+':
 			stack[top-1].Add(stack[top-1], stack[top])
 		case '-':

@@ -27,7 +27,7 @@ func (l *lexer) next() token {
 	switch {
 	case isDigit(ch) || ch == '.':
 		return l.decimal()
-	case ch == '+' || ch == '-' || ch == '*' || ch == '/' || ch == '(' || ch == ')':
+	case ch == '+' || ch == '-' || ch == '*' || ch == '/' || ch == '%' || ch == '(' || ch == ')':
 		l.byteOffset++
 		l.position++
 		return token{kind: ch, start: start, end: l.position}
