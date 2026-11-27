@@ -4,7 +4,7 @@ import backspace from '../../assets/backspace.svg?no-inline'
 
 type BackspaceButtonProps = {
   disabled: boolean
-  onPress: () => void
+  onPress?: () => void
 }
 
 export default function BackspaceButton({
