@@ -1,25 +1,44 @@
-export type CalculatorKey =
-  | '0'
-  | '1'
-  | '2'
-  | '3'
-  | '4'
-  | '5'
-  | '6'
-  | '7'
-  | '8'
-  | '9'
-  | '.'
-  | '+'
-  | '-'
-  | '*'
-  | '/'
-  | 'AC'
-  | '()'
-  | '±'
-  | '%'
-  | '='
-  | 'Backspace'
+const calculatorKeys = [
+  '0',
+  '1',
+  '2',
+  '3',
+  '4',
+  '5',
+  '6',
+  '7',
+  '8',
+  '9',
+  '.',
+  '+',
+  '-',
+  '*',
+  '/',
+  'AC',
+  '()',
+  '±',
+  '%',
+  '=',
+  'Backspace',
+] as const
+
+export type CalculatorKey = (typeof calculatorKeys)[number]
+
+export function getKeyboardCalculatorKey(
+  key: string,
+): CalculatorKey | undefined {
+  switch (key) {
+    case 'Escape':
+      return 'AC'
+    case 'Enter':
+      return '='
+    case '(':
+    case ')':
+      return '()'
+    default:
+      return calculatorKeys.find((calculatorKey) => calculatorKey === key)
+  }
+}
 
 const operandEnd = /[\d.)]$/
 const displayOperators: Record<string, string> = {

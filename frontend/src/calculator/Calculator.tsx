@@ -5,11 +5,14 @@ import CalculatorKeypad from './components/CalculatorKeypad'
 import { useCalculator } from './hooks/useCalculator'
 
 export default function Calculator() {
-  const { displayExpression, pressKey } = useCalculator()
+  const { displayExpression, pressKey, keyboardRef } = useCalculator()
 
   return (
     <Layout>
-      <div className="grid grid-rows-[minmax(min-content,11fr)_minmax(min-content,17fr)] gap-4">
+      <div
+        ref={keyboardRef}
+        className="grid grid-rows-[minmax(min-content,11fr)_minmax(min-content,17fr)] gap-4"
+      >
         <CalculatorDisplay
           expression={displayExpression}
           onBackspace={() => pressKey('Backspace')}
