@@ -13,6 +13,15 @@ An animated calculator with a React frontend and a Go backend. Type or tap an ex
 - Enter and edit expressions with the keyboard or the animated keypad. The layout adapts to phones and desktops, with light and dark themes.
 - Recall your last result, continue a calculation, and see when a result was rounded.
 
+## 🎨 Figma design
+
+Explore the mobile layouts, error state, and reusable keypad components. [View the read-only Figma design](https://www.figma.com/design/4if29UjismqgQUMhnnNuYC/Untitled?node-id=0-1&t=4Pc7DdzcKvrT5sXc-1)
+
+<p>
+  <img src="docs/images/figma-mobile-light.png" alt="Light-theme mobile calculator mockup in Figma" width="220">
+  <img src="docs/images/figma-mobile-dark.png" alt="Dark-theme mobile calculator mockup in Figma" width="220">
+</p>
+
 ## 🚀 Quick start
 
 Docker with Compose is all you need for the containerized setup. Compose provides Node.js and Go, and this setup was tested on a MacBook. On macOS, install and start a current release of [Docker Desktop](https://docs.docker.com/desktop/setup/install/mac-install/).
