@@ -42,7 +42,7 @@ npm run dev
 
 Vite forwards calculation requests to the local API on port 8080 using `frontend/.env.development`. The production image reads the Railway API URL from `frontend/.env.production`. Compose overrides `API_URL` to reach its local API container.
 
-Run `npm test`, `npm run lint`, and `npm run build` in the same directory to check the frontend.
+Run `npm run lint`, `npm run format:check`, and `npm run build` in the same directory to check the frontend.
 
 ## API usage
 
