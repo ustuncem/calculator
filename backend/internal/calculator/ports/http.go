@@ -2,6 +2,7 @@ package ports
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"calculator/backend/internal/calculator/domain/expression"
@@ -37,7 +38,8 @@ func NewHTTPHandler(calculate CalculateFunc) http.Handler {
 		Method:      http.MethodPost,
 		Path:        "/api/v1/calculate",
 		Summary:     "Evaluate a decimal expression",
-		Description: "Accepts up to 15 digits per literal, 40 operands and 32 nested groups. The JSON body may contain up to 4096 bytes.",
+		Description: fmt.Sprintf("Accepts up to %d digits per literal, %d operands and %d nested groups. The JSON body may contain up to %d bytes.",
+			expression.MaxDigitsPerLiteral, expression.MaxOperands, expression.MaxNesting, maxBodyBytes),
 	}, maxBodyBytes, invalidExpressionInput, calculate.handle)
 	return router
 }

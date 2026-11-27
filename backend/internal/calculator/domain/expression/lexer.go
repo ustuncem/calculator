@@ -1,8 +1,11 @@
 package expression
 
-import "unicode/utf8"
+import (
+	"fmt"
+	"unicode/utf8"
+)
 
-const maxDigits = 15
+const MaxDigitsPerLiteral = 15
 
 type lexer struct {
 	input                string
@@ -35,7 +38,7 @@ func (l *lexer) next() token {
 		if r > 0xffff {
 			l.position++
 		}
-		return badToken("invalid_token", "Use a decimal digit, space, parenthesis or arithmetic operator.", start, l.position)
+		return badToken(InvalidToken, "Use a decimal digit, space, parenthesis or arithmetic operator.", start, l.position)
 	}
 }
 
@@ -47,12 +50,12 @@ func (l *lexer) decimal() token {
 		switch {
 		case isDigit(ch):
 			digits++
-			if digits > maxDigits {
-				return badToken("too_many_digits", "Use at most 15 digits per number.", l.position, l.position+1)
+			if digits > MaxDigitsPerLiteral {
+				return badToken(TooManyDigits, fmt.Sprintf("Use at most %d digits per number.", MaxDigitsPerLiteral), l.position, l.position+1)
 			}
 		case ch == '.':
 			if point {
-				return badToken("invalid_number", "Use at most one decimal point per number.", l.position, l.position+1)
+				return badToken(InvalidNumber, "Use at most one decimal point per number.", l.position, l.position+1)
 			}
 			point = true
 		default:
@@ -64,7 +67,7 @@ func (l *lexer) decimal() token {
 
 done:
 	if digits == 0 {
-		return badToken("invalid_number", "A number must contain at least one digit.", start, l.position)
+		return badToken(InvalidNumber, "A number must contain at least one digit.", start, l.position)
 	}
 	return token{kind: number, text: l.input[startByte:l.byteOffset], start: start, end: l.position}
 }

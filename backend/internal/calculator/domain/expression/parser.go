@@ -1,8 +1,10 @@
 package expression
 
+import "fmt"
+
 const (
-	maxOperands = 40
-	maxNesting  = 32
+	MaxOperands = 40
+	MaxNesting  = 32
 )
 
 type parser struct {
@@ -19,10 +21,10 @@ func parse(expression string) ([]token, error) {
 		return nil, err
 	}
 	if p.current.kind == ')' {
-		return nil, p.current.failure("unexpected_closing_parenthesis", "Remove this closing parenthesis or add the matching opening parenthesis.")
+		return nil, p.current.failure(UnexpectedClosingParenthesis, "Remove this closing parenthesis or add the matching opening parenthesis.")
 	}
 	if p.current.kind != endOfInput {
-		return nil, p.current.failure("expected_operator", "Add an arithmetic operator between operands.")
+		return nil, p.current.failure(ExpectedOperator, "Add an arithmetic operator between operands.")
 	}
 	return p.program, nil
 }
@@ -61,15 +63,15 @@ func (p *parser) atom(depth int) error {
 	t := p.current
 	switch t.kind {
 	case number:
-		if p.operands == maxOperands {
-			return t.failure("too_many_operands", "Use at most 40 numbers per expression.")
+		if p.operands == MaxOperands {
+			return t.failure(TooManyOperands, fmt.Sprintf("Use at most %d numbers per expression.", MaxOperands))
 		}
 		p.operands++
 		p.program = append(p.program, t)
 		p.advance()
 	case '(':
-		if depth == maxNesting {
-			return t.failure("nesting_limit_exceeded", "Use at most 32 nested groups.")
+		if depth == MaxNesting {
+			return t.failure(NestingLimitExceeded, fmt.Sprintf("Use at most %d nested groups.", MaxNesting))
 		}
 		p.advance()
 		if err := p.expression(1, depth+1); err != nil {
@@ -79,12 +81,12 @@ func (p *parser) atom(depth int) error {
 		case ')':
 			p.advance()
 		case endOfInput:
-			return p.current.failure("expected_closing_parenthesis", "Close this group with a parenthesis.")
+			return p.current.failure(ExpectedClosingParenthesis, "Close this group with a parenthesis.")
 		default:
-			return p.current.failure("expected_operator", "Add an arithmetic operator between operands.")
+			return p.current.failure(ExpectedOperator, "Add an arithmetic operator between operands.")
 		}
 	default:
-		return t.failure("expected_operand", "Enter a number or parenthesized expression.")
+		return t.failure(ExpectedOperand, "Enter a number or parenthesized expression.")
 	}
 	return nil
 }

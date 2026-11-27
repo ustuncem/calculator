@@ -14,13 +14,13 @@ type token struct {
 	err        *Error
 }
 
-func badToken(code, detail string, start, end int) token {
-	return token{kind: invalid, err: newError(code, detail, start, end)}
+func badToken(kind ErrorKind, detail string, start, end int) token {
+	return token{kind: invalid, err: newError(kind, detail, start, end)}
 }
 
-func (t token) failure(code, detail string) *Error {
+func (t token) failure(kind ErrorKind, detail string) *Error {
 	if t.err != nil {
 		return t.err
 	}
-	return newError(code, detail, t.start, t.end)
+	return newError(kind, detail, t.start, t.end)
 }

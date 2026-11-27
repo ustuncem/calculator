@@ -33,7 +33,7 @@ func evaluateProgram(program []token) (Result, error) {
 			stack[top-1].Mul(stack[top-1], stack[top])
 		case '/':
 			if stack[top].Sign() == 0 {
-				return Result{}, t.failure("division_by_zero", "The divisor evaluates to zero.")
+				return Result{}, t.failure(DivisionByZero, "The divisor evaluates to zero.")
 			}
 			stack[top-1].Quo(stack[top-1], stack[top])
 		default:

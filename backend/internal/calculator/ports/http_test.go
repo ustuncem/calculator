@@ -125,6 +125,31 @@ func TestCalculateExpressionProblemSpans(t *testing.T) {
 	}
 }
 
+func TestAllExpressionErrorsHaveDocumentedHTTPProblems(t *testing.T) {
+	handler := ports.NewHTTPHandler(func(code string) (expression.Result, error) {
+		return expression.Result{}, &expression.Error{Code: code, Detail: "Evaluation failed.", Start: 0, End: 1}
+	})
+	seen := map[string]bool{}
+	for _, code := range expression.ErrorCodes() {
+		if code == "" || seen[code] {
+			t.Fatalf("empty or duplicate expression error code %q", code)
+		}
+		seen[code] = true
+		t.Run(code, func(t *testing.T) {
+			response, got := postCalculation(t, handler, strings.NewReader(`{"expression":"`+code+`"}`), "application/json")
+			path := "/problems/" + code
+			if response.Code != http.StatusUnprocessableEntity || got["code"] != code || got["type"] != path {
+				t.Fatalf("HTTP %d, problem %v; want HTTP 422 with type %s", response.Code, got, path)
+			}
+			doc := httptest.NewRecorder()
+			handler.ServeHTTP(doc, httptest.NewRequest(http.MethodGet, path, nil))
+			if doc.Code != http.StatusOK || !strings.Contains(doc.Body.String(), "Code: "+code+"\n") {
+				t.Fatalf("GET %s returned HTTP %d: %s", path, doc.Code, doc.Body)
+			}
+		})
+	}
+}
+
 func TestCalculateInternalFailureReturnsGenericProblem(t *testing.T) {
 	failure := errors.New("private calculation failure")
 	for _, tt := range []struct {

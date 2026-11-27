@@ -21,9 +21,10 @@ func registerProblemSchema(registry huma.Registry) {
 	typ := reflect.TypeFor[problem]()
 	registry.RegisterTypeAlias(reflect.TypeFor[httperr.Problem](), typ)
 	schema := registry.Schema(typ, false, "Problem")
-	schema.Properties["type"].Examples = []any{"/problems/division_by_zero"}
+	exampleCode := expression.DivisionByZero.Code()
+	schema.Properties["type"].Examples = []any{httperr.TypePath + exampleCode}
 	schema.Properties["title"].Examples = []any{"Division by zero"}
-	schema.Properties["code"].Examples = []any{"division_by_zero"}
+	schema.Properties["code"].Examples = []any{exampleCode}
 }
 
 func calculationProblem(err error) error {

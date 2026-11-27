@@ -7,7 +7,9 @@ import (
 	commonerrors "calculator/backend/internal/common/errors"
 )
 
-var ErrBlankExpression = &commonerrors.CodedError{Code: "invalid_expression_input", Detail: "expression is blank"}
+const InvalidExpressionInputCode = "invalid_expression_input"
+
+var ErrBlankExpression = &commonerrors.CodedError{Code: InvalidExpressionInputCode, Detail: "expression is blank"}
 
 func Calculate(input string) (expression.Result, error) {
 	if strings.TrimSpace(input) == "" {
