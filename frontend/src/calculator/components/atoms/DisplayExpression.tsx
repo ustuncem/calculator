@@ -14,6 +14,12 @@ type DisplayExpressionProps = {
   errorId?: string
 }
 
+function moveCaretToEdge(input: HTMLTextAreaElement, edge: 'Home' | 'End') {
+  const position = edge === 'End' ? input.value.length : 0
+  input.setSelectionRange(position, position)
+  input.scrollTop = edge === 'End' ? input.scrollHeight : 0
+}
+
 export default function DisplayExpression({
   value,
   inputRef,
@@ -33,12 +39,7 @@ export default function DisplayExpression({
 
     if (key === 'Home' || key === 'End') {
       event.preventDefault()
-      if (!shiftKey) {
-        const position = key === 'Home' ? 0 : value.length
-        currentTarget.setSelectionRange(position, position)
-        currentTarget.scrollTop =
-          key === 'Home' ? 0 : currentTarget.scrollHeight
-      }
+      if (!shiftKey) moveCaretToEdge(currentTarget, key)
       return
     }
 
@@ -68,6 +69,7 @@ export default function DisplayExpression({
           event.currentTarget.value = value
         }}
         onKeyDown={handleCaretKey}
+        onBlur={(event) => moveCaretToEdge(event.currentTarget, 'End')}
         onScroll={syncScroll}
       />
       <span role="status" className="sr-only">
