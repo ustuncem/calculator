@@ -10,7 +10,7 @@ From the repository root, start the website and API with Docker Compose.
 docker compose up --build
 ```
 
-Open [the website](http://localhost:3000). The Postman checks run once against the API on the Compose network. Use `docker compose down` to stop the stack.
+Open [the calculator](http://127.0.0.1:3000) or [the API docs](http://127.0.0.1:8080/docs). The Postman checks run once against the API on the Compose network. Use `docker compose down` to stop the stack.
 
 To run the API by itself and publish it on port 8080, use:
 
@@ -32,7 +32,7 @@ The API defaults to port `8080`. Set `PORT` to configure the server's listening 
 
 ## Frontend
 
-The [React starter](https://calculator-web-production-710b13d9.up.railway.app) uses TypeScript, Vite and Tailwind. Start the development server with Node 24 and npm.
+The [calculator frontend](https://calculator-web-production-710b13d9.up.railway.app) uses TypeScript, Vite and Tailwind. Start the development server with Node 24 and npm.
 
 ```sh
 cd frontend
@@ -40,7 +40,9 @@ npm ci
 npm run dev
 ```
 
-Run `npm run lint` and `npm run build` in the same directory to verify a production build.
+Vite forwards calculation requests to the local API on port 8080 using `frontend/.env.development`. The production image reads the Railway API URL from `frontend/.env.production`. Compose overrides `API_URL` to reach its local API container.
+
+Run `npm test`, `npm run lint`, and `npm run build` in the same directory to check the frontend.
 
 ## API usage
 
