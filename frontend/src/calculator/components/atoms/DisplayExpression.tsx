@@ -20,13 +20,9 @@ export default function DisplayExpression({
 }: DisplayExpressionProps) {
   const start = highlight?.start ?? caret
   const end = highlight?.end ?? caret
-  const hasHighlight = Boolean(highlight)
-
   useLayoutEffect(() => {
-    const input = inputRef.current
-    input?.setSelectionRange(start, end)
-    if (hasHighlight) input?.focus({ preventScroll: true })
-  }, [value, start, end, inputRef, hasHighlight])
+    inputRef.current?.setSelectionRange(start, end)
+  }, [value, start, end, inputRef])
 
   function handleCaretKey(event: KeyboardEvent<HTMLInputElement>) {
     const { key, shiftKey, metaKey, ctrlKey, currentTarget } = event
@@ -55,7 +51,7 @@ export default function DisplayExpression({
         aria-invalid={Boolean(errorId)}
         aria-describedby={errorId}
         aria-label="Expression"
-        className="pointer-events-none absolute inset-x-0 bottom-0 w-full rounded-sm text-right opacity-0 placeholder:text-current focus:opacity-100 data-highlight:focus:opacity-0 focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-primary"
+        className="absolute inset-x-0 bottom-0 w-full rounded-sm text-right opacity-0 placeholder:text-current focus:opacity-100 data-highlight:focus:opacity-0 focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-primary"
         data-highlight={highlight ? '' : undefined}
         value={value}
         placeholder="0"

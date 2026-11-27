@@ -5,9 +5,7 @@ import {
   getKeyboardCalculatorKey,
 } from '../utils/calculatorInput'
 
-export function useCalculatorKeyboard(
-  onKey: (key: CalculatorKey, fromButton: boolean) => void,
-) {
+export function useCalculatorKeyboard(onKey: (key: CalculatorKey) => void) {
   const handleKeyDown = useEffectEvent((event: KeyboardEvent) => {
     if (event.defaultPrevented || event.isComposing || event.metaKey) return
     if (
@@ -16,13 +14,17 @@ export function useCalculatorKeyboard(
     )
       return
 
-    const fromButton = event.target instanceof HTMLButtonElement
-    if (fromButton && event.key === 'Enter') return
+    if (
+      event.key === 'Enter' &&
+      event.target instanceof HTMLButtonElement &&
+      !event.target.closest('[data-calculator]')
+    )
+      return
     const key = getKeyboardCalculatorKey(event.key)
     if (!key) return
 
     event.preventDefault()
-    onKey(key, fromButton)
+    onKey(key)
   })
 
   useEffect(() => {

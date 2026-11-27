@@ -41,10 +41,7 @@ export function useCalculatorView() {
     )
   }
 
-  useCalculatorKeyboard((key, fromButton) => {
-    if (fromButton) entry.current?.focus()
-    pressKey(key)
-  })
+  useCalculatorKeyboard(pressKey)
 
   return {
     displayProps: {
