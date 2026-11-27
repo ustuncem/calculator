@@ -45,6 +45,16 @@ services:
     profiles: [verify]
     build: ./backend
 
+  web-ci:
+    profiles: [verify]
+    build: ./frontend
+    depends_on:
+      - api-ci
+    environment:
+      API_URL: http://api-ci:8080
+    ports:
+      - "127.0.0.1:8181:8080"
+
   verify:
     profiles: [verify]
     build: ./postman

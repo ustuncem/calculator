@@ -1,11 +1,6 @@
-name: Frontend CI
+name: Frontend and integration checks
 
-on:
-  pull_request:
-    paths: ['frontend/**']
-  push:
-    branches: [main]
-    paths: ['frontend/**']
+on: workflow_call
 
 permissions:
   contents: read
@@ -13,25 +8,32 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v6
         with:
           persist-credentials: false
 
-      - name: Build the frontend image
-        run: docker build -t calculator-web:ci frontend
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
 
-      - name: Smoke-test the frontend
+      - name: Start the production images on a private network
+        run: docker compose up --build -d web-ci
+
+      - name: Check the frontend bundle and problem documentation
+        run: sh frontend/smoke-test.sh http://127.0.0.1:8181
+
+      - name: Run browser and shared contract tests through the frontend
+        env:
+          CALCULATOR_URL: http://127.0.0.1:8181
+          HUSKY: '0'
         run: |
-          docker run -d --name web -e PORT=8181 -p 127.0.0.1:8181:8181 calculator-web:ci
-          sh frontend/smoke-test.sh http://127.0.0.1:8181
+          npm ci --prefix frontend
+          npm --prefix frontend run test:browser
 
-  deploy:
-    if: github.event_name == 'push'
-    needs: verify
-    uses: ./.github/workflows/deploy.yml
-    with:
-      directory: frontend
-      service: calculator-web
-    secrets: inherit
+      - name: Stop test containers
+        if: always()
+        run: docker compose --profile verify down

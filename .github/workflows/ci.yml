@@ -1,17 +1,53 @@
-name: Backend CI
+name: Calculator CI
 
 on:
   pull_request:
-    paths: ['backend/**']
+    paths: ['backend/**', 'frontend/**', 'postman/**', 'compose.yaml', '.github/workflows/**']
   push:
     branches: [main]
-    paths: ['backend/**']
+    paths: ['backend/**', 'frontend/**', 'postman/**', 'compose.yaml', '.github/workflows/**']
 
 permissions:
   contents: read
 
 jobs:
-  verify:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.paths.outputs.backend }}
+      frontend: ${{ steps.paths.outputs.frontend }}
+      contract: ${{ steps.paths.outputs.contract }}
+      browser: ${{ steps.paths.outputs.browser }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - id: paths
+        env:
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          if [[ "$BASE" =~ ^0+$ ]]; then
+            BASE=$(git mktree </dev/null)
+          fi
+          git diff --no-renames --name-only "$BASE" HEAD > "$RUNNER_TEMP/changed-files"
+          changed() {
+            if grep -Eq "$2" "$RUNNER_TEMP/changed-files"; then
+              echo "$1=true"
+            else
+              echo "$1=false"
+            fi
+          }
+          {
+            changed backend '^backend/'
+            changed frontend '^frontend/'
+            changed contract '^(backend/|postman/|compose\.yaml$|\.github/workflows/)'
+            changed browser '^(backend/|frontend/|compose\.yaml$|\.github/workflows/)'
+          } >> "$GITHUB_OUTPUT"
+
+  contract:
+    needs: changes
+    if: needs.changes.outputs.contract == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -36,11 +72,25 @@ jobs:
         if: always()
         run: docker compose --profile verify down
 
-  deploy:
-    if: github.event_name == 'push'
-    needs: verify
+  browser:
+    needs: changes
+    if: needs.changes.outputs.browser == 'true'
+    uses: ./.github/workflows/frontend.yml
+
+  deploy-backend:
+    needs: [changes, contract, browser]
+    if: github.event_name == 'push' && needs.changes.outputs.backend == 'true'
     uses: ./.github/workflows/deploy.yml
     with:
       directory: backend
       service: calculator-api
+    secrets: inherit
+
+  deploy-frontend:
+    needs: [changes, browser]
+    if: github.event_name == 'push' && needs.changes.outputs.frontend == 'true'
+    uses: ./.github/workflows/deploy.yml
+    with:
+      directory: frontend
+      service: calculator-web
     secrets: inherit

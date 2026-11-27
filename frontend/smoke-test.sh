@@ -6,3 +6,4 @@ html=$(curl --fail --silent --show-error --retry 10 --retry-delay 1 --retry-all-
 script=$(printf '%s\n' "$html" | sed -n 's|.*<script[^>]* src="\(/assets/[^"]*\.js\)".*|\1|p')
 test -n "$script"
 curl --fail --silent --show-error --output /dev/null "$base_url$script"
+curl --fail --silent --show-error "$base_url/problems/division_by_zero" | grep -F 'Code: division_by_zero'
