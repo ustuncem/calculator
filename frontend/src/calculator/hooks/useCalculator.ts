@@ -1,13 +1,17 @@
 import { useState } from 'react'
 
-export function useCalculator() {
-  const [expression, setExpression] = useState(
-    '456,234.34 - 56,324 * 456 * (343 / 4)',
-  )
+import {
+  type CalculatorKey,
+  formatExpression,
+  updateExpression,
+} from '../utils/calculatorInput'
 
-  function backspace() {
-    setExpression((value) => value.trimEnd().slice(0, -1).trimEnd())
+export function useCalculator() {
+  const [expression, setExpression] = useState('')
+
+  function pressKey(key: CalculatorKey) {
+    setExpression((value) => updateExpression(value, key))
   }
 
-  return { expression, backspace }
+  return { displayExpression: formatExpression(expression), pressKey }
 }

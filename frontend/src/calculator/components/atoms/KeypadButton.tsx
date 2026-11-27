@@ -14,17 +14,20 @@ const labelStyles = {
 type KeypadButtonProps = {
   variant?: keyof typeof labelStyles
   label?: string
+  onPress: () => void
   children: ReactNode
 }
 
 export default function KeypadButton({
   variant = 'default',
   label,
+  onPress,
   children,
 }: KeypadButtonProps) {
   return (
     <AnimatedButton
       aria-label={label}
+      onPress={onPress}
       className="grid min-h-11 min-w-0 place-items-center rounded-sm text-[28px] leading-[normal]"
     >
       <Text className={cn('tracking-normal', labelStyles[variant])}>

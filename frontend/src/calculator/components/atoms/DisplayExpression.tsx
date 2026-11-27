@@ -1,16 +1,17 @@
-import { AnimatePresence, useIsPresent, useReducedMotion } from 'motion/react'
+import { AnimatePresence, useReducedMotion } from 'motion/react'
 import * as m from 'motion/react-m'
 
 import { Text } from '@common/components/atoms/text'
 
-function Character({ text }: { text: string }) {
-  const present = useIsPresent()
+const collapsedCharacter = { width: 0, opacity: 0, y: 8, filter: 'blur(2px)' }
 
+function Character({ text }: { text: string }) {
   return (
     <m.span
-      className={present ? undefined : 'inline-block whitespace-pre'}
-      style={{ width: 'auto' }}
-      exit={{ width: 0, opacity: 0, y: 8, filter: 'blur(2px)' }}
+      className="inline-block whitespace-pre"
+      initial={collapsedCharacter}
+      animate={{ width: 'auto', opacity: 1, y: 0, filter: 'blur(0px)' }}
+      exit={collapsedCharacter}
       transition={{ duration: 0.12, ease: 'easeOut' }}
     >
       {text}
