@@ -69,6 +69,23 @@ test('toggles the operand sign without changing a binary operator', () => {
   expect(visibleExpression(press(negative, '±'))).toBe('2+3')
 })
 
+test('inserts a percentage only after a complete operand at the caret', () => {
+  for (const text of ['', '2+', '(', '.', '10%']) {
+    const draft = editingDraft(text)
+    expect(press(draft, '%')).toEqual(draft)
+  }
+
+  const draft = editingDraft('10+20')
+  expect(press(draft, '%', 1)).toEqual(draft)
+  expect(press(draft, '%', 2)).toMatchObject({ text: '10%+20', caret: 3 })
+  expect(press(editingDraft('5.'), '%')).toMatchObject({ text: '5.%' })
+
+  const percent = press(editingDraft('(10'), '%')
+  expect(visibleExpression(press(percent, '2'))).toBe('(10%')
+  expect(visibleExpression(press(percent, '±'))).toBe('(-10%')
+  expect(visibleExpression(press(percent, '()'))).toBe('(10%)')
+})
+
 test('counts typed digits including zeros, even when a sign and point are present', () => {
   const accepted = press(editingDraft('-00000000.000000'), '0')
   expect(visibleExpression(accepted)).toBe('-00000000.0000000')

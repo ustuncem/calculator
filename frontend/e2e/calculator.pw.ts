@@ -49,6 +49,33 @@ test('restores a rounded result and continues from its exact signed value', asyn
   await expect(rounded).toHaveCount(0)
 })
 
+test('applies postfix percentage from the keypad and keyboard', async ({
+  page,
+}) => {
+  await page.goto('/')
+  const entry = page.getByRole('textbox', { name: 'Expression' })
+  const percent = page.getByRole('button', { name: 'Percent', exact: true })
+
+  await percent.click()
+  await expect(entry).toHaveValue('')
+  await entry.pressSequentially('200+')
+  await entry.press('%')
+  await expect(entry).toHaveValue('200 +')
+  await entry.pressSequentially('10')
+  await percent.click()
+  await expect(entry).toHaveValue('200 + 10%')
+  await entry.press('Enter')
+  await expect(entry).toHaveValue('200.1')
+
+  await entry.pressSequentially('1/3')
+  await entry.press('Enter')
+  await expect(entry).toHaveValue('0.333333333333333')
+  await entry.pressSequentially('%*300')
+  await expect(entry).toHaveValue('0.333333333333333% × 300')
+  await entry.press('Enter')
+  await expect(entry).toHaveValue('1')
+})
+
 test.describe('touch keypad', () => {
   test.use({
     hasTouch: true,

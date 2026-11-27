@@ -46,14 +46,17 @@ const maxDigitsPerLiteral = 15
 const maxOperands = 40
 const maxNesting = 32
 
-const operandEnd = /[\d.)]$/
+const operandEnd = /[\d.)%]$/
 const isOperator = (key: string) => /^[+*/-]$/.test(key)
-type EditKey = Exclude<CalculatorKey, 'AC' | '%' | '='>
+const isContinuation = (key: string) => isOperator(key) || key === '%'
+type EditKey = Exclude<CalculatorKey, 'AC' | '='>
 
 function updatePrefix(expression: string, key: EditKey): string {
   switch (key) {
     case 'Backspace':
       return expression.slice(0, -1)
+    case '%':
+      return expression + key
     case '()': {
       const openGroups =
         expression.split('(').length - expression.split(')').length
@@ -65,11 +68,11 @@ function updatePrefix(expression: string, key: EditKey): string {
     }
     case '±':
       return expression.replace(
-        /(?<![\d.)])([+-]?)([\d.]*)$/,
-        (_, sign, number) => (sign === '-' ? number : `-${number}`),
+        /(?<![\d.)%])([+-]?)([\d.]+%?)?$/,
+        (_, sign, number = '') => (sign === '-' ? number : `-${number}`),
       )
     default:
-      return !isOperator(key) && expression.endsWith(')')
+      return !isOperator(key) && /[)%]$/.test(expression)
         ? expression
         : expression + key
   }
@@ -188,7 +191,7 @@ export function editDraft(
 ): Draft {
   const current = { ...draft, error: undefined }
   if (key === 'AC') return editingDraft()
-  if (key === '%' || key === '=') return current
+  if (key === '=') return current
 
   let { start, end } = selection
   let text = draft.mode === 'result' ? '' : draft.text
@@ -196,7 +199,7 @@ export function editDraft(
 
   if (draft.mode === 'result' && key !== 'Backspace') {
     if (key === '±') return current // The calculation request owns result negation.
-    if (isOperator(key)) {
+    if (isContinuation(key)) {
       start = end = draft.base.result.length
     } else {
       base = undefined
@@ -224,6 +227,10 @@ export function editDraft(
   const offset = base?.result.length ?? 0
   const before = text.slice(0, start - offset)
   const after = text.slice(end - offset)
+  if (key === '%') {
+    const hasOperand = (base && !before) || /(?:\d\.?|\))$/.test(before)
+    if (!hasOperand || /^[\d.(%]/.test(after)) return draft
+  }
   const prefix =
     key === 'Backspace' && start !== end ? before : updatePrefix(before, key)
   if (prefix === before && key !== 'Backspace') return current
@@ -240,8 +247,8 @@ export function editDraft(
     if (error) return { ...(base ? resultDraft(base) : current), error }
   }
   if (!base) return { mode: 'editing', text, caret }
-  // Removing the joining operator exposes the original group for further editing.
-  if (!isOperator(text[0])) {
+  // Removing the continuation operator exposes the original group for further editing.
+  if (!isContinuation(text[0])) {
     return {
       mode: 'editing',
       text: submitted,

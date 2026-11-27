@@ -18,7 +18,7 @@ export function formatExpression(expression: string) {
         )
       }
 
-      const isBinary = /[\d.)]/.test(expression[index - 1] ?? '')
+      const isBinary = /[\d.)%]/.test(expression[index - 1] ?? '')
       return isBinary ? ` ${symbol} ` : symbol
     })
     .trimEnd()
