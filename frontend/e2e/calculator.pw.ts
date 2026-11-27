@@ -1,0 +1,72 @@
+import { expect, test } from '@playwright/test'
+
+test('a keypad click edits at the caret, and Enter activates the focused key', async ({
+  page,
+}) => {
+  await page.goto('/')
+  const entry = page.getByRole('textbox', { name: 'Expression' })
+  const key = (name: string) => page.getByRole('button', { name, exact: true })
+
+  await entry.pressSequentially('123')
+  await entry.press('Home')
+  await entry.press('ArrowRight')
+  await key('9').click()
+  await expect(entry).toHaveValue('1,923')
+
+  await entry.press('Home')
+  await page.getByLabel('Dark mode').focus()
+  await key('8').click()
+  await expect(entry).toHaveValue('19,238')
+
+  await key('All clear').press('Enter')
+  await key('7').press('Enter')
+  await expect(entry).toHaveValue('7')
+})
+
+test('restores a rounded result and continues from its exact signed value', async ({
+  page,
+}) => {
+  await page.goto('/')
+  const entry = page.getByRole('textbox', { name: 'Expression' })
+  const key = (name: string) => page.getByRole('button', { name, exact: true })
+  const rounded = page.getByText('Rounded result', { exact: true })
+
+  await entry.pressSequentially('1/3')
+  await entry.press('Enter')
+  await expect(entry).toHaveValue('0.333333333333333')
+  await expect(rounded).toBeVisible()
+
+  await key('All clear').click()
+  await expect(rounded).toHaveCount(0)
+  await key('Restore result of 1 ÷ 3').click()
+  await expect(rounded).toBeVisible()
+  await key('Change sign').click()
+  await expect(entry).toHaveValue('−0.333333333333333')
+  await key('Multiply').click()
+  await key('3').click()
+  await key('Equals').click()
+  await expect(entry).toHaveValue('−1')
+  await expect(rounded).toHaveCount(0)
+})
+
+test.describe('touch keypad', () => {
+  test.use({
+    hasTouch: true,
+    isMobile: true,
+    viewport: { width: 390, height: 844 },
+  })
+
+  test('retains the native caret between taps', async ({ page }) => {
+    await page.goto('/')
+    const entry = page.getByRole('textbox', { name: 'Expression' })
+    const key = (name: string) =>
+      page.getByRole('button', { name, exact: true })
+
+    await key('2').tap()
+    await expect(entry).toBeFocused()
+    await entry.press('Home')
+    await key('1').tap()
+    await expect(entry).toHaveValue('12')
+    await expect(entry).toBeFocused()
+  })
+})
