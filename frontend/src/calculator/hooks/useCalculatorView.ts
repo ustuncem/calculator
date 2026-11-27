@@ -12,7 +12,7 @@ import { useCalculatorKeyboard } from './useCalculatorKeyboard'
 
 export function useCalculatorView() {
   const calculator = useCalculator()
-  const entry = useRef<HTMLInputElement>(null)
+  const entry = useRef<HTMLTextAreaElement>(null)
   const feedbackId = useId()
   const { draft, isPending, lastCalculation } = calculator
   const expression = visibleExpression(draft)

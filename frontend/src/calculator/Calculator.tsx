@@ -21,7 +21,7 @@ export default function Calculator() {
       <div
         data-calculator
         onClickCapture={releasePointerFocus}
-        className="grid grid-rows-[minmax(min-content,11fr)_minmax(min-content,17fr)] gap-4"
+        className="grid grid-rows-[minmax(min-content,11fr)_minmax(min-content,17fr)] gap-4 short-landscape:grid-cols-2 short-landscape:grid-rows-1"
       >
         <CalculatorDisplay {...displayProps}>
           <DisplayExpression {...expressionProps} />

@@ -1,11 +1,14 @@
-import { type KeyboardEvent, type RefObject, useLayoutEffect } from 'react'
+import type { KeyboardEvent, RefObject } from 'react'
 
+import { useExpressionMirror } from '../../hooks/useExpressionMirror'
 import type { Span } from '../../utils/calculatorFeedback'
 import ExpressionText from './ExpressionText'
 
+import './DisplayExpression.css'
+
 type DisplayExpressionProps = {
   value: string
-  inputRef: RefObject<HTMLInputElement | null>
+  inputRef: RefObject<HTMLTextAreaElement | null>
   caret: number
   highlight?: Span
   errorId?: string
@@ -18,13 +21,14 @@ export default function DisplayExpression({
   highlight,
   errorId,
 }: DisplayExpressionProps) {
-  const start = highlight?.start ?? caret
-  const end = highlight?.end ?? caret
-  useLayoutEffect(() => {
-    inputRef.current?.setSelectionRange(start, end)
-  }, [value, start, end, inputRef])
+  const { mirrorRef, syncScroll } = useExpressionMirror(
+    inputRef,
+    value,
+    caret,
+    highlight,
+  )
 
-  function handleCaretKey(event: KeyboardEvent<HTMLInputElement>) {
+  function handleCaretKey(event: KeyboardEvent<HTMLTextAreaElement>) {
     const { key, shiftKey, metaKey, ctrlKey, currentTarget } = event
 
     if (key === 'Home' || key === 'End') {
@@ -32,6 +36,8 @@ export default function DisplayExpression({
       if (!shiftKey) {
         const position = key === 'Home' ? 0 : value.length
         currentTarget.setSelectionRange(position, position)
+        currentTarget.scrollTop =
+          key === 'Home' ? 0 : currentTarget.scrollHeight
       }
       return
     }
@@ -45,23 +51,34 @@ export default function DisplayExpression({
   }
 
   return (
-    <div className="group relative min-h-[1lh] text-right text-2xl leading-[normal] font-medium tracking-[-0.04em] text-secondary-600 dark:text-primary-400">
-      <input
+    <div className="expression-editor relative isolate grid min-h-[1lh] grid-rows-[minmax(0,1fr)] rounded-sm text-right text-2xl leading-[normal] font-medium tracking-[-0.04em] text-secondary-600 has-focus-visible:outline-2 has-focus-visible:outline-offset-3 has-focus-visible:outline-primary dark:text-primary-400">
+      <textarea
         ref={inputRef}
         aria-invalid={Boolean(errorId)}
         aria-describedby={errorId}
         aria-label="Expression"
-        className="absolute inset-x-0 bottom-0 w-full rounded-sm text-right opacity-0 placeholder:text-current focus:opacity-100 data-highlight:focus:opacity-0 focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-primary"
-        data-highlight={highlight ? '' : undefined}
+        className="absolute inset-0 size-full resize-none appearance-none overflow-y-auto overscroll-contain bg-transparent p-0 text-right text-transparent caret-secondary-600 outline-none [scrollbar-width:none] dark:caret-primary-400"
         value={value}
-        placeholder="0"
-        readOnly
+        rows={1}
+        inputMode="none"
+        spellCheck={false}
+        onBeforeInput={(event) => event.preventDefault()}
+        // Calculator keys own edits. The editable surface supplies the native caret.
+        onChange={(event) => {
+          event.currentTarget.value = value
+        }}
         onKeyDown={handleCaretKey}
+        onScroll={syncScroll}
       />
       <span role="status" className="sr-only">
         {value || '0'}
       </span>
-      <ExpressionText value={value} highlight={highlight} />
+      <div
+        ref={mirrorRef}
+        className="pointer-events-none relative overflow-hidden select-none"
+      >
+        <ExpressionText value={value} highlight={highlight} />
+      </div>
     </div>
   )
 }

@@ -3,7 +3,13 @@ import * as m from 'motion/react-m'
 
 import type { Span } from '../../utils/calculatorFeedback'
 
-const collapsedCharacter = { width: 0, opacity: 0, y: 8, filter: 'blur(2px)' }
+const collapsedCharacter = {
+  display: 'inline-block',
+  width: 0,
+  opacity: 0,
+  y: 8,
+  filter: 'blur(2px)',
+}
 
 export default function ExpressionText({
   value,
@@ -15,16 +21,13 @@ export default function ExpressionText({
   const reduceMotion = useReducedMotion()
 
   return (
-    <span
-      aria-hidden="true"
-      className={`pointer-events-none block whitespace-pre-wrap wrap-anywhere select-none ${highlight ? '' : 'group-focus-within:invisible'}`}
-    >
+    <span aria-hidden="true" className="block min-h-[1lh]">
       {highlight ? (
         <>
           {value.slice(0, highlight.start)}
-          <span className="border-l-2 border-rose-600 text-rose-600">
+          <mark className="border-l-2 border-rose-600 bg-transparent -ml-0.5 text-rose-600">
             {value.slice(highlight.start, highlight.end)}
-          </span>
+          </mark>
           {value.slice(highlight.end)}
         </>
       ) : reduceMotion ? (
@@ -35,13 +38,14 @@ export default function ExpressionText({
             {Array.from(value, (text, index) => (
               <m.span
                 key={index}
-                className="inline-block whitespace-pre"
                 initial={collapsedCharacter}
                 animate={{
+                  display: 'inline-block',
                   width: 'auto',
                   opacity: 1,
                   y: 0,
                   filter: 'blur(0px)',
+                  transitionEnd: { display: 'inline' },
                 }}
                 exit={collapsedCharacter}
                 transition={{ duration: 0.12, ease: 'easeOut' }}

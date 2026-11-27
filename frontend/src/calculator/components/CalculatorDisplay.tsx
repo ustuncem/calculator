@@ -55,7 +55,12 @@ export default function CalculatorDisplay({
       {pending ? (
         <CalculationSkeleton />
       ) : (
-        <div ref={shakeOnError}>{children}</div>
+        <div
+          ref={shakeOnError}
+          className="flex min-h-[1lh] flex-1 flex-col justify-end text-2xl leading-[normal] [contain:size]"
+        >
+          {children}
+        </div>
       )}
       {feedback && !pending && (
         <Text

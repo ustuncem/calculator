@@ -1,0 +1,8 @@
+.expression-editor,
+.expression-editor textarea {
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  word-break: break-all;
+  font-kerning: none;
+  font-variant-ligatures: none;
+}
