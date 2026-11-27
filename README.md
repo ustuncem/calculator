@@ -1,6 +1,6 @@
 # Calculator
 
-A Go API that evaluates decimal expressions using addition, subtraction, multiplication, and division.
+A React calculator with a Go backend that evaluates decimal expressions using exact rational arithmetic. [Live calculator](https://calculator-web-production-710b13d9.up.railway.app) · [Git repository](https://github.com/ustuncem/calculator) · [Design decisions](specs/business_rules.md) · [AI prompt excerpts](specs/ai-prompts.md)
 
 ## Setup
 
@@ -32,7 +32,7 @@ The API defaults to port `8080`. Set `PORT` to configure the server's listening 
 
 ## Frontend
 
-The [calculator frontend](https://calculator-web-production-710b13d9.up.railway.app) uses TypeScript, Vite and Tailwind. Start the development server with Node 24 and npm.
+The frontend uses TypeScript, Vite and Tailwind. Start the development server with Node 24 and npm.
 
 ```sh
 cd frontend
@@ -40,7 +40,7 @@ npm ci
 npm run dev
 ```
 
-Vite forwards calculation requests to the local API on port 8080 using `frontend/.env.development`. The production image reads the Railway API URL from `frontend/.env.production`. Compose overrides `API_URL` to reach its local API container.
+Vite and Caddy forward `/api/*` and `/problems/*` to the same upstream. Vite uses `frontend/.env.development` for local development. The production image reads the Railway URL from `frontend/.env.production`. Compose overrides `API_URL` to reach its local Go container.
 
 Run `npm run lint`, `npm run format:check`, and `npm run build` in the same directory to check the frontend.
 
@@ -68,14 +68,29 @@ In Postman, import the [Calculator API collection](postman/calculator.postman_co
 
 ## Tests
 
-Run the same verification locally and in GitHub Actions from the repository root.
+Run the Postman contract suite from the repository root.
 
 ```sh
-docker compose up --build --exit-code-from verify verify
-docker compose --profile verify down
+docker compose -p calculator-check up --build --exit-code-from verify verify
+docker compose -p calculator-check --profile verify down
 ```
 
 The Docker build runs the Go tests. Compose starts the resulting image on its own network, exports `/openapi.json`, regenerates the Postman requests, and runs the existing Postman assertions against that container. A failed build or assertion fails the command. GitHub Actions attaches the OpenAPI spec and generated requests as the `postman-contract` artifact on successful runs.
+
+Run the browser regressions against the production images with Node 24, frontend dependencies and Google Chrome installed.
+
+```sh
+docker compose -p calculator-check up --build -d web-ci
+sh frontend/smoke-test.sh http://127.0.0.1:8181
+CALCULATOR_URL=http://127.0.0.1:8181 npm --prefix frontend run test:browser
+docker compose -p calculator-check --profile verify down
+```
+
+The browser suite exercises desktop and emulated touch input, history, rounding, sign changes, and the published expression limits. Each limit example checks the editor and posts to the Go endpoint through the same frontend origin.
+
+### V1 coverage
+
+Measured on November 27, 2026. Go tests covered **90.5%** of backend statements and **100%** of expression-domain statements. The 45 Vitest tests covered **63.79%** of frontend statements. The six Chrome regressions and 66 Postman assertions run separately from statement coverage.
 
 Generate both coverage reports from the repository root after installing the frontend dependencies.
 
@@ -107,12 +122,13 @@ GitHub Actions selects builds by the files changed on a pull request or push to 
 
 | Changed paths | Build |
 | --- | --- |
-| `frontend/**` | Lint, run Vitest, type-check, build and smoke-test the React image |
-| `backend/**` | Build the Go image and run the Postman contract tests |
-| Both folders | Run both workflows independently |
-| Only files outside those folders | Skip both builds |
+| `frontend/**` | Build the production images, lint, format-check, type-check, run Vitest and exercise the frontend through Chrome |
+| `backend/**` | Run Go and Postman verification plus the browser suite against the changed Go image |
+| `postman/**` | Run Go and Postman verification |
+| `compose.yaml` or `.github/workflows/**` | Run contract and browser verification |
+| Documentation only | Skip builds |
 
-After a successful push build on `main`, the matching workflow uploads that commit to Railway using the production `RAILWAY_TOKEN` project secret. Each service has its own deployment queue. A newer commit supersedes a pending deployment only when its service directory differs.
+After verification succeeds on a push to `main`, each changed service directory is eligible for deployment to Railway with the production `RAILWAY_TOKEN` project secret. Each service has its own deployment queue. A newer commit supersedes a pending deployment only when its service directory differs.
 
 Railway builds `calculator-web` from `/frontend` and checks `/`. It builds `calculator-api` from `/backend` and checks `/health`. Each service watches its own directory for any Railway Git-triggered deployments.
 
