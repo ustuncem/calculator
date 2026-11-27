@@ -30,9 +30,9 @@ const maxBodyBytes = 4096
 func NewHTTPHandler(calculate CalculateFunc) http.Handler {
 	config := huma.DefaultConfig("Calculator API", "1.0.0")
 	registerProblemSchema(config.OpenAPI.Components.Schemas)
-	router, api := server.NewHTTPRouter(config, problemTypes())
+	router := server.NewHTTPRouter(config, problemTypes())
 
-	server.RegisterJSON(api, huma.Operation{
+	server.RegisterJSON(router, huma.Operation{
 		OperationID: "calculate",
 		Method:      http.MethodPost,
 		Path:        "/api/v1/calculate",

@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"net/http"
+	"sync"
 
 	"calculator/backend/internal/common/server/httperr"
 
@@ -11,7 +12,23 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-func NewHTTPRouter(config huma.Config, problemTypes []httperr.Definition) (http.Handler, huma.API) {
+// Huma exposes its validation and error policies as process-wide settings.
+var configureHuma = sync.OnceFunc(func() {
+	huma.ValidateStrictCasing = true
+	httperr.ConfigureHumaErrors()
+})
+
+type HTTPRouter struct {
+	mux *chi.Mux
+	api huma.API
+}
+
+func (router *HTTPRouter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	router.mux.ServeHTTP(w, r)
+}
+
+func NewHTTPRouter(config huma.Config, problemTypes []httperr.Definition) *HTTPRouter {
+	configureHuma()
 	router := chi.NewRouter()
 	router.Get(httperr.TypePath+"{code}", httperr.Documentation(problemTypes))
 	config.CreateHooks = nil
@@ -29,5 +46,5 @@ func NewHTTPRouter(config huma.Config, problemTypes []httperr.Definition) (http.
 	}, func(context.Context, *struct{}) (*struct{}, error) {
 		return nil, nil
 	})
-	return router, api
+	return &HTTPRouter{mux: router, api: api}
 }

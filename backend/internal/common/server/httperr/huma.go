@@ -10,7 +10,7 @@ import (
 
 const requestProblemsKey = "httperr.requestProblems"
 
-func init() {
+func ConfigureHumaErrors() {
 	huma.NewError = func(status int, detail string, _ ...error) huma.StatusError {
 		return statusProblem(status, detail)
 	}
