@@ -7,7 +7,7 @@ import { defineConfig } from 'vitest/config'
 export default defineConfig(({ mode }) => ({
   server: {
     proxy: {
-      '/api': {
+      '^/(api|problems)/': {
         target: loadEnv(mode, process.cwd(), 'API_').API_URL,
         changeOrigin: true,
       },

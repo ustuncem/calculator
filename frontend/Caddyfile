@@ -1,6 +1,7 @@
 :{$PORT:8080} {
 	root * /srv
-	reverse_proxy /api/* {$API_URL} {
+	@calculator path /api/* /problems/*
+	reverse_proxy @calculator {$API_URL} {
 		header_up Host {upstream_hostport}
 	}
 	file_server
