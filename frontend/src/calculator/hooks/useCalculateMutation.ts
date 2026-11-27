@@ -24,7 +24,7 @@ async function calculate(input: CalculationInput): Promise<Calculation> {
     typeof data !== 'object' ||
     !('result' in data) ||
     typeof data.result !== 'string' ||
-    !/^-?\d+(?:\.\d+)?$/.test(data.result)
+    !/^-?(?:\d+(?:\.\d+)?|[1-9](?:\.\d+)?E\+[1-9]\d*)$/.test(data.result)
   ) {
     throw new SyntaxError()
   }

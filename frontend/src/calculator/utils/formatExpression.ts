@@ -6,10 +6,11 @@ const displayOperators: Record<string, string> = {
   '*': '×',
   '/': '÷',
 }
+const expressionToken = /\d+(?:\.\d*)?(?:E\+\d+)?|\.\d*|[+*/-]/g
 
 export function formatExpression(expression: string) {
   return expression
-    .replace(/\d+(?:\.\d*)?|\.\d*|[+*/-]/g, (token, index: number) => {
+    .replace(expressionToken, (token, index: number) => {
       const symbol = displayOperators[token]
       if (!symbol) {
         return token.replace(/^\d+/, (integer) =>

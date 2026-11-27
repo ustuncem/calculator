@@ -13,6 +13,10 @@ test('formats unary signs and incomplete expressions as the user types', () => {
   )
 })
 
+test('formats the operators around a scientific result and keeps its exponent together', () => {
+  expect(formatExpression('-1.25E+15+2345')).toBe('−1.25E+15 + 2,345')
+})
+
 test('maps raw error spans across display separators and preserves a trailing caret', () => {
   const formatted = '1,234 ÷ 0'
   expect(displaySpan(formatted, { start: 4, end: 5 })).toEqual({

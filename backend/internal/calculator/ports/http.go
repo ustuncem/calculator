@@ -20,7 +20,7 @@ type calculateInput struct {
 
 type calculateOutput struct {
 	Body struct {
-		Result  string `json:"result" example:"0.3" doc:"Canonical decimal in ordinary notation."`
+		Result  string `json:"result" example:"0.3" doc:"Canonical decimal string. Magnitudes of 10^15 or greater use scientific notation, such as 1E+15."`
 		Rounded bool   `json:"rounded" doc:"Whether the result was rounded to 15 fractional places."`
 	}
 }

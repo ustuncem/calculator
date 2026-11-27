@@ -166,7 +166,13 @@ export function editDraft(
     (start < baseLength ||
       (key === 'Backspace' && start === end && start === baseLength))
   ) {
-    text = base.result + text
+    if (base.result.includes('E')) {
+      // A scientific result is an indivisible display value, outside the input grammar.
+      start = 0
+      end = Math.max(0, end - baseLength)
+    } else {
+      text = base.result + text
+    }
     base = undefined
   }
   const offset = base ? baseLength : 0

@@ -17,15 +17,16 @@
 ## Results and continuation
 
 - Evaluate the four operations with exact intermediate values. `(1 / 3) * 3` returns `{"result":"1","rounded":false}`.
-- Return every digit of a terminating result in ordinary decimal notation. Remove unnecessary fractional trailing zeros and normalize negative zero to `"0"`. `0.000000001 * 0.000000001` returns `"0.000000000000000001"` exactly.
+- Preserve the value of every terminating result. Remove unnecessary fractional trailing zeros and normalize negative zero to `"0"`. `0.000000001 * 0.000000001` returns `"0.000000000000000001"` exactly.
 - Round a nonterminating result to the nearest value at 15 fractional places, then remove unnecessary trailing zeros. `2 / 3` returns `{"result":"0.666666666666667","rounded":true}`. A nonzero result that rounds to zero also carries `rounded:true`.
-- The 15-digit entry limit applies to literals. `999999999999999 + 1` is valid and returns `"1000000000000000"`.
+- Format results with an absolute value of 10^15 or greater in scientific notation. Use one digit before the decimal point, followed by `E+` and the exponent. Preserve every significant digit of the resulting value. `999999999999999 + 1` returns `{"result":"1E+15","rounded":false}`. The 15-digit entry limit still applies to input literals.
 - After equals, continuing with a binary operator groups and reuses the original expression. For instance, continuing `1 / 3` with `* 3` submits `(1 / 3) * 3`. Typing a new digit starts fresh. Apply all request limits to the continued expression. Keep the previous result visible if continuation exceeds a limit.
+- The keypad treats a displayed scientific result as one value. Backspace deletes it as a unit when the caret touches the result.
 - The UI may localize the result and show an approximation indicator. It retains the API string and original expression so presentation cannot change arithmetic.
 
 ## Request limits and error contract
 
-The product limits are digits, operands and nesting. There is no separate character-count rule. For a boundary test, join 40 copies of the 15-digit literal `100000000000000` with `+`. The resulting 639-character expression must succeed with `{"result":"4000000000000000","rounded":false}`.
+The product limits are digits, operands and nesting. There is no separate character-count rule. For a boundary test, join 40 copies of the 15-digit literal `100000000000000` with `+`. The resulting 639-character expression must succeed with `{"result":"4E+15","rounded":false}`.
 
 **Proposed HTTP guard: 4 KiB (4,096 bytes) for the complete JSON request body.** This bounds how much input the server reads before JSON decoding and arithmetic parsing. It includes JSON syntax, whitespace and escape sequences. Two JSON encodings of an identical expression can therefore differ in byte size. Enforce the limit while reading even when the client omits Content-Length. An over-limit body receives HTTP 413 before the evaluator is called. Confirm the byte value against real client payloads before treating it as fixed.
 

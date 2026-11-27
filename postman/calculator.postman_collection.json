@@ -437,7 +437,7 @@
             "exec": [
               "pm.test('Returns HTTP 200', () => pm.response.to.have.status(200));",
               "pm.test('Returns the expected decimal and rounding flag', () => {",
-              "    pm.expect(pm.response.json()).to.eql({\"result\":\"4000000000000000\",\"rounded\":false});",
+              "    pm.expect(pm.response.json()).to.eql({\"result\":\"4E+15\",\"rounded\":false});",
               "});"
             ]
           }
@@ -673,7 +673,7 @@
                   "pm.test('Returns HTTP 200', () => pm.response.to.have.status(200));",
                   "pm.test('Uses application/json', () => pm.expect(pm.response.headers.get('Content-Type')).to.eql('application/json'));",
                   "pm.test('Returns the exact result string and rounding flag', () => {",
-                  "    pm.expect(pm.response.json()).to.eql({\"result\":\"5555555550000000000\",\"rounded\":false});",
+                  "    pm.expect(pm.response.json()).to.eql({\"result\":\"5.55555555E+18\",\"rounded\":false});",
                   "});"
                 ]
               }
@@ -710,7 +710,7 @@
                   "pm.test('Returns HTTP 200', () => pm.response.to.have.status(200));",
                   "pm.test('Uses application/json', () => pm.expect(pm.response.headers.get('Content-Type')).to.eql('application/json'));",
                   "pm.test('Returns the exact result string and rounding flag', () => {",
-                  "    pm.expect(pm.response.json()).to.eql({\"result\":\"999999999999999000000000000000\",\"rounded\":false});",
+                  "    pm.expect(pm.response.json()).to.eql({\"result\":\"9.99999999999999E+29\",\"rounded\":false});",
                   "});"
                 ]
               }
@@ -1063,7 +1063,7 @@
           ]
         },
         {
-          "name": "Continue a 16-digit result",
+          "name": "Continue a scientific notation result",
           "item": [
             {
               "name": "Evaluate 999999999999999 + 1",
@@ -1094,7 +1094,7 @@
                     "exec": [
                       "pm.test('Returns HTTP 200', () => pm.response.to.have.status(200));",
                       "pm.test('Returns the expected decimal and rounding flag', () => {",
-                      "    pm.expect(pm.response.json()).to.eql({\"result\":\"1000000000000000\",\"rounded\":false});",
+                      "    pm.expect(pm.response.json()).to.eql({\"result\":\"1E+15\",\"rounded\":false});",
                       "});"
                     ]
                   }

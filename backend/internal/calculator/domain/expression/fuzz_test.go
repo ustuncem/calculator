@@ -14,12 +14,13 @@ func FuzzEvaluate(f *testing.F) {
 	for _, seed := range []string{
 		"", "2 + 3 * 4", "1 / 0 +", "8 / (3 - 3)", "(1 / 3) * 3", "2 / 3",
 		"-0", "2 * --3", ".5 + 5.", "🧮", "1 + \xff", "0000000000000000",
+		"999999999999999 + 1", "-100000000000000 * 12 + 0.125",
 		strings.Repeat("1+", 40) + "1", strings.Repeat("(", 33) + "1" + strings.Repeat(")", 33),
 	} {
 		f.Add(seed)
 	}
 
-	canonical := regexp.MustCompile(`^-?(0|[1-9][0-9]*)(\.[0-9]*[1-9])?$`)
+	canonical := regexp.MustCompile(`^-?((0|[1-9][0-9]{0,14})(\.[0-9]*[1-9])?|[1-9](\.[0-9]*[1-9])?E\+[1-9][0-9]+)$`)
 	f.Fuzz(func(t *testing.T, input string) {
 		result, err := expression.Evaluate(input)
 		if err != nil {

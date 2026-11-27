@@ -85,6 +85,31 @@ test('submits the original expression when continuing from a rounded result', as
   ])
 })
 
+test('displays a large result and reuses its original expression for continuation', async () => {
+  const request = vi
+    .fn<typeof fetch>()
+    .mockResolvedValueOnce(Response.json({ result: '1E+15', rounded: false }))
+    .mockResolvedValueOnce(
+      Response.json({ result: '999999999999999', rounded: false }),
+    )
+  vi.stubGlobal('fetch', request)
+  const { result, press } = renderCalculator()
+
+  press(...Array<CalculatorKey>(15).fill('9'), '+', '1', '=')
+  await waitFor(() =>
+    expect(result.current.expressionProps.value).toBe('1E+15'),
+  )
+  press('-', '1')
+  expect(result.current.expressionProps.value).toBe('1E+15 − 1')
+  press('=')
+  await waitFor(() => {
+    expect(result.current.expressionProps.value).toBe('999,999,999,999,999')
+  })
+  expect(request.mock.calls[1]?.[1]?.body).toBe(
+    '{"expression":"(999999999999999+1)-1"}',
+  )
+})
+
 test('ignores empty submissions and key presses during a pending calculation', async () => {
   let finishRequest!: (response: Response) => void
   const pending = new Promise<Response>((resolve) => {
@@ -163,7 +188,7 @@ test.each([
 
 test.each([
   ['a numeric result', () => Response.json({ result: 0.3 })],
-  ['exponent notation', () => Response.json({ result: '1e3' })],
+  ['an incomplete exponent', () => Response.json({ result: '1E+' })],
   ['malformed JSON', () => new Response('invalid JSON')],
 ])(
   'keeps the input and reports %s as an invalid response',

@@ -135,6 +135,18 @@ test('editing the visible result uses its digits as the new expression', () => {
   })
 })
 
+test('deletes a scientific result as a single value when editing it', () => {
+  const result = resultDraft({
+    expression: '999999999999999+1',
+    result: '1E+15',
+  })
+  expect(press(result, 'Backspace')).toEqual({ text: '', caret: 0 })
+
+  const continued = press(press(result, '*'), '3')
+  const edited = press(continued, 'Backspace', 1, 6)
+  expect(calculationInput(edited)).toEqual({ expression: '3', label: '3' })
+})
+
 test('deleting the continuation operator exposes the original group', () => {
   const continued = press(press(resultDraft(previous), '*'), '3')
   const draft = press(continued, 'Backspace', 17, 18)

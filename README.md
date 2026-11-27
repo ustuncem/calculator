@@ -62,7 +62,7 @@ curl --fail --silent --show-error http://127.0.0.1:8080/api/v1/calculate \
 {"result":"0.3","rounded":false}
 ```
 
-Results are decimal strings. Repeating decimals round to 15 fractional places and return `"rounded":true`. Invalid expressions return HTTP 422 with a stable error `code` and a UTF-16 span when the error points to part of the expression. JSON bodies over 4,096 bytes return HTTP 413. For grammar, limits, and error examples, see the [business rules](specs/business_rules.md).
+Results are decimal strings. Results with an absolute value of 10^15 or greater use scientific notation such as `"1E+15"`. Repeating decimals round to 15 fractional places and return `"rounded":true`. Invalid expressions return HTTP 422 with a stable error `code` and a UTF-16 span when the error points to part of the expression. JSON bodies over 4,096 bytes return HTTP 413. For grammar, limits, and error examples, see the [business rules](specs/business_rules.md).
 
 In Postman, import the [Calculator API collection](postman/calculator.postman_collection.json) and both environments. Select [Calculator Local](postman/local.postman_environment.json) or [Calculator Production](postman/production.postman_environment.json) in the environment picker. Each request uses the selected environment’s `baseUrl`.
 
