@@ -1,19 +1,60 @@
 services:
   api:
-    build: ./backend
+    image: golang:1.27.4
+    init: true
+    working_dir: /app
+    command:
+      - sh
+      - -ec
+      - |
+        go install github.com/air-verse/air@v1.67.4
+        exec air --build.cmd 'cd src && go build -o ../tmp/calculator ./internal/calculator' \
+          --build.entrypoint ./tmp/calculator --build.include_ext go,mod,sum
+    volumes:
+      - ./backend:/app/src:ro
+      - go-modules:/go/pkg/mod
+      - go-build-cache:/root/.cache/go-build
     ports:
       - "127.0.0.1:8080:8080"
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://localhost:8080/health"]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+      start_period: 30s
 
   web:
-    build: ./frontend
+    image: node:24-bookworm-slim
+    init: true
+    working_dir: /app
+    command: ["sh", "-ec", "npm ci && exec npm run dev -- --host 0.0.0.0 --strictPort"]
+    depends_on:
+      api:
+        condition: service_healthy
     environment:
       API_URL: http://api:8080
+      HUSKY: "0"
+    volumes:
+      - ./frontend:/app
+      - node-modules:/app/node_modules
+      - npm-cache:/root/.npm
     ports:
-      - "127.0.0.1:3000:8080"
+      - "127.0.0.1:3000:5173"
+
+  api-ci:
+    profiles: [verify]
+    build: ./backend
 
   verify:
+    profiles: [verify]
     build: ./postman
     depends_on:
-      - api
+      - api-ci
     environment:
-      API_URL: http://api:8080
+      API_URL: http://api-ci:8080
+
+volumes:
+  go-modules:
+  go-build-cache:
+  node-modules:
+  npm-cache:

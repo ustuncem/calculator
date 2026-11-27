@@ -23,7 +23,7 @@ jobs:
         run: docker compose up --build --exit-code-from verify verify
 
       - name: Collect the OpenAPI spec and generated Postman requests
-        run: docker compose cp verify:/work/postman ./postman-contract
+        run: docker compose --profile verify cp verify:/work/postman ./postman-contract
 
       - uses: actions/upload-artifact@v6
         with:
@@ -34,7 +34,7 @@ jobs:
 
       - name: Stop test containers
         if: always()
-        run: docker compose down
+        run: docker compose --profile verify down
 
   deploy:
     if: github.event_name == 'push'

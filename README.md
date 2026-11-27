@@ -4,13 +4,13 @@ A Go API that evaluates decimal expressions using addition, subtraction, multipl
 
 ## Setup
 
-From the repository root, start the website and API with Docker Compose.
+From the repository root, start the Vite frontend and Go API with Docker Compose.
 
 ```sh
-docker compose up --build
+docker-compose up
 ```
 
-Open [the calculator](http://127.0.0.1:3000) or [the API docs](http://127.0.0.1:8080/docs). The Postman checks run once against the API on the Compose network. Use `docker compose down` to stop the stack.
+Open [the calculator](http://127.0.0.1:3000) or [the API docs](http://127.0.0.1:8080/docs). Both services load the current workspace source. Vite applies frontend edits live, and Air rebuilds the API when Go files change. Press Ctrl+C to stop the stack.
 
 To run the API by itself and publish it on port 8080, use:
 
@@ -72,7 +72,7 @@ Run the same verification locally and in GitHub Actions from the repository root
 
 ```sh
 docker compose up --build --exit-code-from verify verify
-docker compose down
+docker compose --profile verify down
 ```
 
 The Docker build runs the Go tests. Compose starts the resulting image on its own network, exports `/openapi.json`, regenerates the Postman requests, and runs the existing Postman assertions against that container. A failed build or assertion fails the command. GitHub Actions attaches the OpenAPI spec and generated requests as the `postman-contract` artifact on successful runs.
