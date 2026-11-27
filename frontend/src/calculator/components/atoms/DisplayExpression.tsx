@@ -1,34 +1,32 @@
-import { AnimatePresence, useReducedMotion } from 'motion/react'
-import * as m from 'motion/react-m'
-import type { KeyboardEvent } from 'react'
+import { type KeyboardEvent, type RefObject, useLayoutEffect } from 'react'
 
-import { useLimitFeedback } from '../../hooks/useLimitFeedback'
-import type { LimitError } from '../../utils/calculatorInput'
+import type { Span } from '../../utils/calculatorFeedback'
+import ExpressionText from './ExpressionText'
 
-const collapsedCharacter = { width: 0, opacity: 0, y: 8, filter: 'blur(2px)' }
-
-function Character({ text }: { text: string }) {
-  return (
-    <m.span
-      className="inline-block whitespace-pre"
-      initial={collapsedCharacter}
-      animate={{ width: 'auto', opacity: 1, y: 0, filter: 'blur(0px)' }}
-      exit={collapsedCharacter}
-      transition={{ duration: 0.12, ease: 'easeOut' }}
-    >
-      {text}
-    </m.span>
-  )
+type DisplayExpressionProps = {
+  value: string
+  inputRef: RefObject<HTMLInputElement | null>
+  caret: number
+  highlight?: Span
+  errorId?: string
 }
-
-type DisplayExpressionProps = { value: string; limitError?: LimitError }
 
 export default function DisplayExpression({
   value,
-  limitError,
+  inputRef,
+  caret,
+  highlight,
+  errorId,
 }: DisplayExpressionProps) {
-  const reduceMotion = useReducedMotion()
-  const limitFeedbackRef = useLimitFeedback(limitError, reduceMotion)
+  const start = highlight?.start ?? caret
+  const end = highlight?.end ?? caret
+  const hasHighlight = Boolean(highlight)
+
+  useLayoutEffect(() => {
+    const input = inputRef.current
+    input?.setSelectionRange(start, end)
+    if (hasHighlight) input?.focus({ preventScroll: true })
+  }, [value, start, end, inputRef, hasHighlight])
 
   function handleCaretKey(event: KeyboardEvent<HTMLInputElement>) {
     const { key, shiftKey, metaKey, ctrlKey, currentTarget } = event
@@ -51,45 +49,23 @@ export default function DisplayExpression({
   }
 
   return (
-    <div
-      ref={limitFeedbackRef}
-      className="group relative min-h-[1lh] text-right text-2xl leading-[normal] font-medium tracking-[-0.04em] text-secondary-600 [--expression-error-color:var(--color-rose-600)] dark:text-primary-400"
-    >
+    <div className="group relative min-h-[1lh] text-right text-2xl leading-[normal] font-medium tracking-[-0.04em] text-secondary-600 dark:text-primary-400">
       <input
+        ref={inputRef}
+        aria-invalid={Boolean(errorId)}
+        aria-describedby={errorId}
         aria-label="Expression"
-        className="pointer-events-none absolute inset-x-0 bottom-0 w-full rounded-sm text-right opacity-0 placeholder:text-current focus:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-primary"
+        className="pointer-events-none absolute inset-x-0 bottom-0 w-full rounded-sm text-right opacity-0 placeholder:text-current focus:opacity-100 data-highlight:focus:opacity-0 focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-primary"
+        data-highlight={highlight ? '' : undefined}
         value={value}
         placeholder="0"
         readOnly
-        onFocus={({ currentTarget }) => {
-          currentTarget.setSelectionRange(value.length, value.length)
-        }}
         onKeyDown={handleCaretKey}
       />
       <span role="status" className="sr-only">
         {value || '0'}
       </span>
-      <span
-        aria-hidden="true"
-        className="pointer-events-none block wrap-anywhere select-none group-focus-within:invisible"
-      >
-        {reduceMotion ? (
-          value || '0'
-        ) : (
-          <>
-            <AnimatePresence initial={false}>
-              {Array.from(value, (text, index) => (
-                <Character key={index} text={text} />
-              ))}
-            </AnimatePresence>
-            {!value && (
-              <span className="absolute right-0 animate-in fade-in duration-[120ms]">
-                0
-              </span>
-            )}
-          </>
-        )}
-      </span>
+      <ExpressionText value={value} highlight={highlight} />
     </div>
   )
 }

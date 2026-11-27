@@ -7,15 +7,19 @@ import KeypadButton from './atoms/KeypadButton'
 const dividerClassName = 'col-span-4 mx-1'
 
 type CalculatorKeypadProps = {
+  disabled: boolean
   onKeyPress: (key: CalculatorKey) => void
 }
 
 export default function CalculatorKeypad({
   onKeyPress,
+  disabled,
 }: CalculatorKeypadProps) {
   return (
     <ShadowBox
-      render={<section aria-label="Number pad" />}
+      render={
+        <fieldset role="region" aria-label="Number pad" disabled={disabled} />
+      }
       className="grid grid-cols-4 grid-rows-[repeat(4,minmax(44px,1fr)_auto)_minmax(44px,1fr)] p-3"
     >
       <KeypadButton

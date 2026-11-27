@@ -1,56 +1,52 @@
-import { useReducer, useState } from 'react'
+import { useRef, useState } from 'react'
 
+import type { Span } from '../utils/calculatorFeedback'
 import {
+  calculationInput,
   type CalculatorKey,
-  formatExpression,
-  getKeyboardCalculatorKey,
-  type LimitError,
-  updateExpression,
+  type Draft,
+  editDraft,
+  rejectCalculation,
+  resultDraft,
 } from '../utils/calculatorInput'
-
-type CalculatorInput = { expression: string; limitError?: LimitError }
-
-function applyKey(state: CalculatorInput, key: CalculatorKey): CalculatorInput {
-  const result = updateExpression(state.expression, key)
-  if (typeof result !== 'string') {
-    return { expression: state.expression, limitError: result }
-  }
-  return result === state.expression ? state : { expression: result }
-}
+import { useCalculateMutation } from './useCalculateMutation'
 
 export function useCalculator() {
-  const [{ expression, limitError }, pressKey] = useReducer(applyKey, {
-    expression: '',
-  })
+  const [draft, setDraft] = useState<Draft>({ text: '' })
+  const { submit, isPending, lastCalculation } = useCalculateMutation()
+  const submitting = useRef(false)
 
-  // Keep the ref stable so React leaves the listener attached across updates.
-  const [keyboardRef] = useState(() => (element: HTMLDivElement | null) => {
-    if (!element) return
+  function calculate() {
+    const input = calculationInput(draft)
+    if (!input) return
 
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.defaultPrevented || event.isComposing || event.metaKey) return
-      if (!event.getModifierState('AltGraph')) {
-        if (event.ctrlKey || (event.altKey && event.key !== '±')) return
-      }
-      if (event.key === 'Enter' && event.target instanceof HTMLButtonElement) {
-        return
-      }
-
-      const key = getKeyboardCalculatorKey(event.key)
-      if (!key) return
-
-      event.preventDefault()
-      pressKey(key)
-    }
-
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  })
-
-  return {
-    displayExpression: formatExpression(expression),
-    limitError,
-    pressKey,
-    keyboardRef,
+    submitting.current = true
+    void submit(input)
+      .then((outcome) => {
+        setDraft(
+          outcome.calculation
+            ? resultDraft(outcome.calculation)
+            : rejectCalculation(draft, outcome.error),
+        )
+      })
+      .finally(() => {
+        submitting.current = false
+      })
   }
+
+  function pressKey(key: CalculatorKey, selection: Span) {
+    if (submitting.current) return
+    if (key === '=') {
+      calculate()
+    } else {
+      setDraft(editDraft(draft, key, selection))
+    }
+  }
+
+  function restore() {
+    if (!submitting.current && lastCalculation)
+      setDraft(resultDraft(lastCalculation))
+  }
+
+  return { draft, isPending, lastCalculation, pressKey, restore }
 }
