@@ -2,22 +2,24 @@ import { useRef, useState } from 'react'
 
 import type { Span } from '../utils/calculatorFeedback'
 import {
+  type CalculationInput,
   calculationInput,
   type CalculatorKey,
   type Draft,
   editDraft,
+  editingDraft,
+  oppositeSignInput,
   rejectCalculation,
   resultDraft,
 } from '../utils/calculatorInput'
 import { useCalculateMutation } from './useCalculateMutation'
 
 export function useCalculator() {
-  const [draft, setDraft] = useState<Draft>({ text: '' })
+  const [draft, setDraft] = useState<Draft>(() => editingDraft())
   const { submit, isPending, lastCalculation } = useCalculateMutation()
   const submitting = useRef(false)
 
-  function calculate() {
-    const input = calculationInput(draft)
+  function calculate(input: CalculationInput | undefined) {
     if (!input) return
 
     submitting.current = true
@@ -37,7 +39,9 @@ export function useCalculator() {
   function pressKey(key: CalculatorKey, selection: Span) {
     if (submitting.current) return
     if (key === '=') {
-      calculate()
+      calculate(calculationInput(draft))
+    } else if (key === '±' && draft.mode === 'result') {
+      calculate(oppositeSignInput(draft.base))
     } else {
       setDraft(editDraft(draft, key, selection))
     }

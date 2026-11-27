@@ -46,6 +46,7 @@ export function useCalculatorView() {
   return {
     displayProps: {
       pending: isPending,
+      rounded: draft.mode === 'result' && draft.base.rounded,
       feedback,
       lastExpression:
         lastCalculation && formatExpression(lastCalculation.label),

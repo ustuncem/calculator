@@ -75,45 +75,86 @@ function updatePrefix(expression: string, key: EditKey): string {
   }
 }
 
-type Result = { expression: string; result: string }
-
-export type Draft = {
-  text: string
-  base?: Result
-  caret?: number
-  error?: CalculatorError
+type SubmittedExpression = { expression: string; label: string }
+export type CalculationInput = SubmittedExpression & {
+  // Reversing a result sign can reuse the original expression without nesting another group.
+  opposite?: SubmittedExpression
+}
+export type Calculation = CalculationInput & {
+  result: string
+  rounded: boolean
 }
 
-export function resultDraft(base: Result): Draft {
-  return { base, text: '' }
+export type Draft = { caret?: number; error?: CalculatorError } & (
+  | { mode: 'editing'; text: string }
+  | { mode: 'result'; base: Calculation }
+  | { mode: 'continuing'; base: Calculation; text: string }
+)
+
+export function editingDraft(text = ''): Draft {
+  return { mode: 'editing', text }
 }
 
-export function visibleExpression({ text, base }: Draft) {
-  return (base?.result ?? '') + text
+export function resultDraft(base: Calculation): Draft {
+  return { mode: 'result', base }
 }
 
-function submittedExpression({ text, base }: Draft) {
-  return base ? `(${base.expression})${text}` : text
+export function visibleExpression(draft: Draft) {
+  switch (draft.mode) {
+    case 'editing':
+      return draft.text
+    case 'result':
+      return draft.base.result
+    case 'continuing':
+      return draft.base.result + draft.text
+  }
 }
 
-export function calculationInput(draft: Draft) {
-  if (!draft.text) return
+function groupedExpression(base: Calculation) {
+  return `(${base.expression})`
+}
+
+export function calculationInput(draft: Draft): CalculationInput | undefined {
+  switch (draft.mode) {
+    case 'result':
+      return
+    case 'editing':
+      if (!draft.text) return
+      return { expression: draft.text, label: draft.text }
+    case 'continuing':
+      return {
+        expression: groupedExpression(draft.base) + draft.text,
+        label: visibleExpression(draft),
+      }
+  }
+}
+
+export function oppositeSignInput(base: Calculation): CalculationInput {
+  const opposite = base.opposite ?? {
+    expression: '-' + groupedExpression(base),
+    label: `-(${base.label})`,
+  }
   return {
-    expression: submittedExpression(draft),
-    label: visibleExpression(draft),
+    ...opposite,
+    opposite: { expression: base.expression, label: base.label },
   }
 }
 
 export function rejectCalculation(draft: Draft, error: CalculatorError): Draft {
-  if (!draft.base || error.kind !== 'request' || !error.span)
+  if (error.kind !== 'request' || !error.span || draft.mode === 'editing')
     return { ...draft, error }
+  // A rejected sign change describes the hidden source of an unchanged result.
+  if (draft.mode === 'result') {
+    return { ...draft, error: { kind: 'request', detail: error.detail } }
+  }
 
-  const prefixLength = draft.base.expression.length + 2
+  const prefix = groupedExpression(draft.base)
   const { start, end } = error.span
-  // An error in the hidden expression needs the original group on screen.
-  if (start < prefixLength) return { text: submittedExpression(draft), error }
+  if (start < prefix.length) {
+    return { ...editingDraft(prefix + draft.text), error }
+  }
 
-  const offset = draft.base.result.length - prefixLength
+  const offset = draft.base.result.length - prefix.length
   return {
     ...draft,
     error: { ...error, span: { start: start + offset, end: end + offset } },
@@ -146,59 +187,66 @@ export function editDraft(
   selection: Span,
 ): Draft {
   const current = { ...draft, error: undefined }
-  if (key === 'AC') return { text: '' }
+  if (key === 'AC') return editingDraft()
   if (key === '%' || key === '=') return current
 
-  let { text, base } = draft
   let { start, end } = selection
-  const baseLength = base?.result.length ?? 0
+  let text = draft.mode === 'result' ? '' : draft.text
+  let base = draft.mode === 'editing' ? undefined : draft.base
 
-  if (base && !text && key !== 'Backspace') {
+  if (draft.mode === 'result' && key !== 'Backspace') {
+    if (key === '±') return current // The calculation request owns result negation.
     if (isOperator(key)) {
-      start = end = baseLength
+      start = end = draft.base.result.length
     } else {
       base = undefined
       start = end = 0
     }
   }
-  if (
-    base &&
-    (start < baseLength ||
-      (key === 'Backspace' && start === end && start === baseLength))
-  ) {
-    if (base.result.includes('E')) {
-      // A scientific result is an indivisible display value, outside the input grammar.
-      start = 0
-      end = Math.max(0, end - baseLength)
-    } else {
-      text = base.result + text
+
+  if (base) {
+    const length = base.result.length
+    if (
+      start < length ||
+      (key === 'Backspace' && start === end && start === length)
+    ) {
+      if (base.result.includes('E')) {
+        // A scientific result is an indivisible display value, outside the input grammar.
+        start = 0
+        end = Math.max(0, end - length)
+      } else {
+        text = base.result + text
+      }
+      base = undefined
     }
-    base = undefined
   }
-  const offset = base ? baseLength : 0
+
+  const offset = base?.result.length ?? 0
   const before = text.slice(0, start - offset)
   const after = text.slice(end - offset)
   const prefix =
     key === 'Backspace' && start !== end ? before : updatePrefix(before, key)
   if (prefix === before && key !== 'Backspace') return current
-
   if (key === '.' && (/\.[\d.]*$/.test(before) || /^[\d.]*\./.test(after)))
     return current
 
-  const next: Draft = {
-    base,
-    text: prefix + after,
-    caret: offset + prefix.length,
-  }
-  const submitted = submittedExpression(next)
+  text = prefix + after
+  const caret = offset + prefix.length
+  if (base && !text) return resultDraft(base)
+
+  const submitted = base ? groupedExpression(base) + text : text
   if (key !== 'Backspace') {
     const error = checkLimits(submitted)
-    if (error)
-      return base ? { ...resultDraft(base), error } : { ...current, error }
+    if (error) return { ...(base ? resultDraft(base) : current), error }
   }
+  if (!base) return { mode: 'editing', text, caret }
   // Removing the joining operator exposes the original group for further editing.
-  if (base && next.text && !isOperator(next.text[0])) {
-    return { text: submitted, caret: submitted.length - after.length }
+  if (!isOperator(text[0])) {
+    return {
+      mode: 'editing',
+      text: submitted,
+      caret: submitted.length - after.length,
+    }
   }
-  return next
+  return { mode: 'continuing', base, text, caret }
 }

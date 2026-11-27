@@ -8,9 +8,8 @@ import {
 import { fetch, HttpError } from '@common/lib/fetch'
 
 import type { CalculatorError, Span } from '../utils/calculatorFeedback'
+import type { Calculation, CalculationInput } from '../utils/calculatorInput'
 
-type CalculationInput = { expression: string; label: string }
-type Calculation = CalculationInput & { result: string }
 const lastCalculationKey = ['calculator', 'last-success'] as const
 
 async function calculate(input: CalculationInput): Promise<Calculation> {
@@ -24,11 +23,13 @@ async function calculate(input: CalculationInput): Promise<Calculation> {
     typeof data !== 'object' ||
     !('result' in data) ||
     typeof data.result !== 'string' ||
+    !('rounded' in data) ||
+    typeof data.rounded !== 'boolean' ||
     !/^-?(?:\d+(?:\.\d+)?|[1-9](?:\.\d+)?E\+[1-9]\d*)$/.test(data.result)
   ) {
     throw new SyntaxError()
   }
-  return { ...input, result: data.result }
+  return { ...input, result: data.result, rounded: data.rounded }
 }
 
 function problemSpan(problem: unknown, length: number): Span | undefined {

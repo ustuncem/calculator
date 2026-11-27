@@ -38,7 +38,7 @@ function renderCalculator() {
 test('handles calculator keys while letting modified shortcuts pass through', async () => {
   vi.stubGlobal(
     'fetch',
-    vi.fn().mockResolvedValue(Response.json({ result: '16' })),
+    vi.fn().mockResolvedValue(Response.json({ result: '16', rounded: false })),
   )
   const { result } = renderCalculator()
 
@@ -188,7 +188,11 @@ test.each([
 
 test.each([
   ['a numeric result', () => Response.json({ result: 0.3 })],
-  ['an incomplete exponent', () => Response.json({ result: '1E+' })],
+  [
+    'an incomplete exponent',
+    () => Response.json({ result: '1E+', rounded: false }),
+  ],
+  ['a missing rounding flag', () => Response.json({ result: '16' })],
   ['malformed JSON', () => new Response('invalid JSON')],
 ])(
   'keeps the input and reports %s as an invalid response',
@@ -227,4 +231,80 @@ test('keeps the input available for retry when the network is unavailable', asyn
   press('=')
   await waitFor(() => expect(result.current.expressionProps.value).toBe('4'))
   expect(result.current.displayProps.feedback).toBeUndefined()
+})
+
+test('preserves an approximate zero through sign changes, restore and exact continuation', async () => {
+  const source = '1/300000000000000/300'
+  const request = vi
+    .fn<typeof fetch>()
+    .mockResolvedValueOnce(Response.json({ result: '0', rounded: true }))
+    .mockResolvedValueOnce(Response.json({ result: '0', rounded: true }))
+    .mockResolvedValueOnce(Response.json({ result: '0', rounded: true }))
+    .mockResolvedValueOnce(Response.json({ result: '0', rounded: true }))
+    .mockResolvedValueOnce(Response.json({ result: '-1', rounded: false }))
+  vi.stubGlobal('fetch', request)
+  const { result, press } = renderCalculator()
+  async function submit(key: '±' | '=') {
+    press(key)
+    await waitFor(() => expect(result.current.keypadProps.disabled).toBe(false))
+  }
+
+  press(...(Array.from(source) as CalculatorKey[]))
+  await submit('=')
+  expect(result.current.displayProps.rounded).toBe(true)
+  expect(result.current.expressionProps.value).toBe('0')
+
+  await submit('±')
+  press('AC')
+  expect(result.current.displayProps.rounded).toBe(false)
+  act(() => result.current.displayProps.onRestore())
+  expect(result.current.displayProps.rounded).toBe(true)
+  await submit('±')
+  await submit('±')
+  press('*', ...(Array.from('300000000000000*300') as CalculatorKey[]))
+  await submit('=')
+  expect(result.current.expressionProps.value).toBe('−1')
+  expect(result.current.displayProps.rounded).toBe(false)
+  expect(
+    request.mock.calls.map(
+      ([, options]) => JSON.parse(String(options?.body)).expression,
+    ),
+  ).toEqual([
+    source,
+    `-(${source})`,
+    source,
+    `-(${source})`,
+    `(-(${source}))*300000000000000*300`,
+  ])
+})
+
+test('a rejected sign change keeps the result available for retry', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(Response.json({ result: '3', rounded: false }))
+      .mockResolvedValueOnce(
+        Response.json(
+          { detail: 'Use at most 32 nested groups.', start: 0, end: 1 },
+          { status: 422 },
+        ),
+      )
+      .mockResolvedValueOnce(Response.json({ result: '-3', rounded: false })),
+  )
+  const { result, press } = renderCalculator()
+  press('3', '=')
+  await waitFor(() =>
+    expect(result.current.displayProps.lastExpression).toBe('3'),
+  )
+  press('±')
+  await waitFor(() =>
+    expect(result.current.displayProps.feedback?.message).toBe(
+      'Use at most 32 nested groups.',
+    ),
+  )
+  expect(result.current.expressionProps.value).toBe('3')
+  expect(result.current.expressionProps.highlight).toBeUndefined()
+  press('±')
+  await waitFor(() => expect(result.current.expressionProps.value).toBe('−3'))
 })

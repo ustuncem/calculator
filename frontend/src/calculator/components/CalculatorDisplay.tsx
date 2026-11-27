@@ -11,6 +11,7 @@ import LastExpressionButton from './atoms/LastExpressionButton'
 
 type CalculatorDisplayProps = {
   children: ReactNode
+  rounded: boolean
   pending: boolean
   feedback?: { id: string; message: string }
   lastExpression?: string
@@ -20,6 +21,7 @@ type CalculatorDisplayProps = {
 
 export default function CalculatorDisplay({
   children,
+  rounded,
   pending,
   feedback,
   lastExpression,
@@ -59,6 +61,15 @@ export default function CalculatorDisplay({
         {children}
         {pending && <CalculationSkeleton />}
       </div>
+      {rounded && !pending && (
+        <Text
+          as="p"
+          role="status"
+          className="text-right text-sm text-muted-foreground"
+        >
+          Rounded result
+        </Text>
+      )}
       {feedback && !pending && (
         <Text
           as="p"

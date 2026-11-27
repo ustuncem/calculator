@@ -22,7 +22,8 @@
 - Format results with an absolute value of 10^15 or greater in scientific notation. Use one digit before the decimal point, followed by `E+` and the exponent. Preserve every significant digit of the resulting value. `999999999999999 + 1` returns `{"result":"1E+15","rounded":false}`. The 15-digit entry limit still applies to input literals.
 - After equals, continuing with a binary operator groups and reuses the original expression. For instance, continuing `1 / 3` with `* 3` submits `(1 / 3) * 3`. Typing a new digit starts fresh. Apply all request limits to the continued expression. Keep the previous result visible if continuation exceeds a limit.
 - The keypad treats a displayed scientific result as one value. Backspace deletes it as a unit when the caret touches the result.
-- The UI may localize the result and show an approximation indicator. It retains the API string and original expression so presentation cannot change arithmetic.
+- After equals, `±` evaluates the opposite sign of the original expression. Changing sign twice restores the original expression. A failed sign change keeps the previous result available for retry.
+- The UI labels rounded results, including rounded zero, and restores that label when the user recalls the last result. It retains the returned decimal string and original expression so presentation cannot change arithmetic.
 
 ## Request limits and error contract
 
