@@ -2,6 +2,9 @@ import { AnimatePresence, useReducedMotion } from 'motion/react'
 import * as m from 'motion/react-m'
 import type { KeyboardEvent } from 'react'
 
+import { useLimitFeedback } from '../../hooks/useLimitFeedback'
+import type { LimitError } from '../../utils/calculatorInput'
+
 const collapsedCharacter = { width: 0, opacity: 0, y: 8, filter: 'blur(2px)' }
 
 function Character({ text }: { text: string }) {
@@ -18,8 +21,14 @@ function Character({ text }: { text: string }) {
   )
 }
 
-export default function DisplayExpression({ value }: { value: string }) {
+type DisplayExpressionProps = { value: string; limitError?: LimitError }
+
+export default function DisplayExpression({
+  value,
+  limitError,
+}: DisplayExpressionProps) {
   const reduceMotion = useReducedMotion()
+  const limitFeedbackRef = useLimitFeedback(limitError, reduceMotion)
 
   function handleCaretKey(event: KeyboardEvent<HTMLInputElement>) {
     const { key, shiftKey, metaKey, ctrlKey, currentTarget } = event
@@ -42,7 +51,10 @@ export default function DisplayExpression({ value }: { value: string }) {
   }
 
   return (
-    <div className="group relative min-h-[1lh] text-right text-2xl leading-[normal] font-medium tracking-[-0.04em] text-secondary-600 dark:text-primary-400">
+    <div
+      ref={limitFeedbackRef}
+      className="group relative min-h-[1lh] text-right text-2xl leading-[normal] font-medium tracking-[-0.04em] text-secondary-600 [--expression-error-color:var(--color-rose-600)] dark:text-primary-400"
+    >
       <input
         aria-label="Expression"
         className="pointer-events-none absolute inset-x-0 bottom-0 w-full rounded-sm text-right opacity-0 placeholder:text-current focus:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-primary"

@@ -5,7 +5,8 @@ import CalculatorKeypad from './components/CalculatorKeypad'
 import { useCalculator } from './hooks/useCalculator'
 
 export default function Calculator() {
-  const { displayExpression, pressKey, keyboardRef } = useCalculator()
+  const { displayExpression, limitError, pressKey, keyboardRef } =
+    useCalculator()
 
   return (
     <Layout>
@@ -15,6 +16,7 @@ export default function Calculator() {
       >
         <CalculatorDisplay
           expression={displayExpression}
+          limitError={limitError}
           onBackspace={() => pressKey('Backspace')}
         />
         <CalculatorKeypad onKeyPress={pressKey} />

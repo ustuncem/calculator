@@ -23,6 +23,7 @@ const calculatorKeys = [
 ] as const
 
 export type CalculatorKey = (typeof calculatorKeys)[number]
+export type LimitError = { message: string }
 
 export function getKeyboardCalculatorKey(
   key: string,
@@ -40,6 +41,10 @@ export function getKeyboardCalculatorKey(
   }
 }
 
+const maxDigitsPerLiteral = 15
+const maxOperands = 40
+const maxNesting = 32
+
 const operandEnd = /[\d.)]$/
 const displayOperators: Record<string, string> = {
   '+': '+',
@@ -48,7 +53,10 @@ const displayOperators: Record<string, string> = {
   '/': '÷',
 }
 
-export function updateExpression(expression: string, key: CalculatorKey) {
+export function updateExpression(
+  expression: string,
+  key: CalculatorKey,
+): string | LimitError {
   switch (key) {
     case 'AC':
       return ''
@@ -58,11 +66,16 @@ export function updateExpression(expression: string, key: CalculatorKey) {
     case '=':
       return expression
     case '()': {
-      if (!operandEnd.test(expression)) return `${expression}(`
-
       const openGroups =
         expression.split('(').length - expression.split(')').length
-      return openGroups > 0 ? `${expression})` : expression
+
+      if (operandEnd.test(expression)) {
+        return openGroups > 0 ? `${expression})` : expression
+      }
+      if (openGroups >= maxNesting) {
+        return { message: `Use at most ${maxNesting} nested groups.` }
+      }
+      return `${expression}(`
     }
     case '±':
       return expression.replace(
@@ -74,10 +87,29 @@ export function updateExpression(expression: string, key: CalculatorKey) {
     case '*':
     case '/':
       return expression + key
-    default:
+    default: {
       if (expression.endsWith(')')) return expression
-      if (key === '.' && /\.\d*$/.test(expression)) return expression
+
+      const literal = expression.match(/[\d.]+$/)?.[0] ?? ''
+      const digits = literal.replace('.', '').length
+      if (key === '.' && literal.includes('.')) return expression
+      if (key !== '.' && digits >= maxDigitsPerLiteral) {
+        return {
+          message: `Use at most ${maxDigitsPerLiteral} digits per number.`,
+        }
+      }
+
+      if (digits === 0) {
+        const operands = expression.match(/\d+(?:\.\d*)?|\.\d+/g)?.length ?? 0
+        if (operands >= maxOperands) {
+          return {
+            message: `Use at most ${maxOperands} numbers per expression.`,
+          }
+        }
+      }
+
       return expression + key
+    }
   }
 }
 
