@@ -77,13 +77,22 @@ docker compose down
 
 The Docker build runs the Go tests. Compose starts the resulting image on its own network, exports `/openapi.json`, regenerates the Postman requests, and runs the existing Postman assertions against that container. A failed build or assertion fails the command. GitHub Actions attaches the OpenAPI spec and generated requests as the `postman-contract` artifact on successful runs.
 
-Run the expression domain tests with the race detector and statement coverage, then fuzz the evaluator. Start from the repository root.
+Generate both coverage reports from the repository root after installing the frontend dependencies.
 
 ```sh
-cd backend
-go test -race -count=1 -coverprofile=/tmp/calculator-domain-coverage.out ./internal/calculator/domain/expression
-go tool cover -func=/tmp/calculator-domain-coverage.out
-go test -run '^$' -fuzz '^FuzzEvaluate$' -fuzztime 10s -parallel 4 ./internal/calculator/domain/expression
+mkdir -p coverage/backend
+(cd backend && go test -race -count=1 -coverpkg=./... -coverprofile=../coverage/backend/coverage.out ./...)
+(cd backend && go tool cover -func=../coverage/backend/coverage.out > ../coverage/backend/summary.txt)
+(cd backend && go tool cover -html=../coverage/backend/coverage.out -o ../coverage/backend/index.html)
+npm --prefix frontend run test:coverage
+```
+
+Open `coverage/backend/index.html` and `coverage/frontend/index.html` for line-by-line reports. The backend also writes `summary.txt`, and the frontend writes `coverage-summary.json`.
+
+Run the evaluator fuzzer separately from the repository root.
+
+```sh
+(cd backend && go test -run '^$' -fuzz '^FuzzEvaluate$' -fuzztime 10s -parallel 4 ./internal/calculator/domain/expression)
 ```
 
 To run the Postman collection against the running API from the repository root, use the Postman CLI.
