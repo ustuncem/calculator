@@ -20,7 +20,7 @@ export default function CalculatorKeypad({
       render={
         <fieldset role="region" aria-label="Number pad" disabled={disabled} />
       }
-      className="grid grid-cols-4 grid-rows-[repeat(4,minmax(44px,1fr)_auto)_minmax(44px,1fr)] p-3"
+      className="grid grid-cols-4 grid-rows-[repeat(4,minmax(44px,1fr)_auto)_minmax(44px,1fr)] p-3 select-none"
     >
       <KeypadButton
         variant="secondary"
