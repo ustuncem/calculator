@@ -10,9 +10,16 @@ import { useCalculatorView } from './hooks/useCalculatorView'
 export default function Calculator() {
   const { displayProps, expressionProps, keypadProps } = useCalculatorView()
 
-  function releasePointerFocus(event: MouseEvent<HTMLDivElement>) {
-    if (event.detail > 0 && event.target instanceof Element) {
-      event.target.closest('button')?.blur()
+  function handleButtonClick(event: MouseEvent<HTMLDivElement>) {
+    if (event.detail === 0 || !(event.target instanceof Element)) return
+
+    const button = event.target.closest('button')
+    if (!button) return
+
+    if (window.matchMedia('(pointer: coarse)').matches) {
+      expressionProps.inputRef.current?.focus({ preventScroll: true })
+    } else {
+      button.blur()
     }
   }
 
@@ -20,7 +27,7 @@ export default function Calculator() {
     <Layout>
       <div
         data-calculator
-        onClickCapture={releasePointerFocus}
+        onClickCapture={handleButtonClick}
         className="grid grid-rows-[minmax(min-content,11fr)_minmax(min-content,17fr)] gap-4 short-landscape:grid-cols-2 short-landscape:grid-rows-1"
       >
         <CalculatorDisplay {...displayProps}>

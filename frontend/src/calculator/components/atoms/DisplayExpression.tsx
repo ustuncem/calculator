@@ -52,13 +52,13 @@ export default function DisplayExpression({
   }
 
   return (
-    <div className="expression-editor relative isolate grid min-h-[1lh] grid-rows-[minmax(0,1fr)] rounded-sm text-right text-2xl leading-[normal] font-medium tracking-[-0.04em] text-secondary-600 has-focus-visible:outline-2 has-focus-visible:outline-offset-3 has-focus-visible:outline-primary dark:text-primary-400">
+    <div className="expression-editor relative isolate grid min-h-[1lh] grid-rows-[minmax(0,1fr)] rounded-sm text-right text-2xl leading-[normal] font-medium tracking-[-0.04em] text-secondary-600 group-aria-busy:pointer-events-none group-aria-busy:opacity-0 dark:text-primary-400">
       <textarea
         ref={inputRef}
         aria-invalid={Boolean(errorId)}
         aria-describedby={errorId}
         aria-label="Expression"
-        className="absolute inset-0 size-full resize-none appearance-none overflow-y-auto overscroll-contain bg-transparent p-0 text-right text-transparent caret-secondary-600 outline-none [scrollbar-width:none] dark:caret-primary-400"
+        className="absolute inset-0 size-full resize-none appearance-none overflow-y-auto overscroll-contain bg-transparent p-0 text-right text-transparent caret-secondary-600 outline-none [scrollbar-width:none] focus-visible:outline-hidden dark:caret-primary-400"
         value={value}
         rows={1}
         inputMode="none"
@@ -69,7 +69,11 @@ export default function DisplayExpression({
           event.currentTarget.value = value
         }}
         onKeyDown={handleCaretKey}
-        onBlur={(event) => moveCaretToEdge(event.currentTarget, 'End')}
+        onBlur={(event) => {
+          if (!window.matchMedia('(pointer: coarse)').matches) {
+            moveCaretToEdge(event.currentTarget, 'End')
+          }
+        }}
         onScroll={syncScroll}
       />
       <span role="status" className="sr-only">

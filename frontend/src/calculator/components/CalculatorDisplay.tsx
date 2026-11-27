@@ -43,7 +43,7 @@ export default function CalculatorDisplay({
   return (
     <ShadowBox
       render={<section aria-label="Calculator display" aria-busy={pending} />}
-      className="flex min-w-0 flex-col justify-end gap-4 p-3"
+      className="group flex min-w-0 flex-col justify-end gap-4 p-3"
     >
       {lastExpression && (
         <LastExpressionButton
@@ -52,16 +52,13 @@ export default function CalculatorDisplay({
           onRestore={onRestore}
         />
       )}
-      {pending ? (
-        <CalculationSkeleton />
-      ) : (
-        <div
-          ref={shakeOnError}
-          className="flex min-h-[1lh] flex-1 flex-col justify-end text-2xl leading-[normal] [contain:size]"
-        >
-          {children}
-        </div>
-      )}
+      <div
+        ref={shakeOnError}
+        className="relative flex min-h-[1lh] flex-1 flex-col justify-end text-2xl leading-[normal] [contain:size]"
+      >
+        {children}
+        {pending && <CalculationSkeleton />}
+      </div>
       {feedback && !pending && (
         <Text
           as="p"
