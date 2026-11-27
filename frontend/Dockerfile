@@ -3,7 +3,7 @@ WORKDIR /app
 COPY package*.json ./
 RUN HUSKY=0 npm ci
 COPY . .
-RUN npm run lint && npm run format:check && npm run build
+RUN npm run lint && npm run format:check && npm test && npm run build
 
 FROM caddy:2-alpine
 COPY --from=build /app/dist /srv

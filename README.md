@@ -44,6 +44,8 @@ Vite forwards calculation requests to the local API on port 8080 using `frontend
 
 Run `npm run lint`, `npm run format:check`, and `npm run build` in the same directory to check the frontend.
 
+Put frontend tests in a `__tests__` subfolder of the directory they cover. Run `npm test` to run the Vitest suite once or `npm run test:watch` to rerun it as you edit.
+
 ## API usage
 
 With the API running at `http://127.0.0.1:8080`, use `GET /health` to check availability, `/docs` to browse the API, and `/openapi.json` to retrieve the OpenAPI definition.
@@ -96,7 +98,7 @@ GitHub Actions selects builds by the files changed on a pull request or push to 
 
 | Changed paths | Build |
 | --- | --- |
-| `frontend/**` | Lint, type-check, build and smoke-test the React image |
+| `frontend/**` | Lint, run Vitest, type-check, build and smoke-test the React image |
 | `backend/**` | Build the Go image and run the Postman contract tests |
 | Both folders | Run both workflows independently |
 | Only files outside those folders | Skip both builds |

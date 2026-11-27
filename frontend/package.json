@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "test": "vitest run",
+    "test:watch": "vitest watch",
     "lint": "oxlint --deny-warnings",
     "lint:fix": "npm run lint -- --fix",
     "format": "prettier --write .",
@@ -57,6 +59,7 @@
     "prettier": "^3.10.1",
     "tailwindcss": "^4.3.5",
     "typescript": "~7.0.2",
-    "vite": "^8.3.6"
+    "vite": "^8.3.6",
+    "vitest": "^5.1.2"
   }
 }
