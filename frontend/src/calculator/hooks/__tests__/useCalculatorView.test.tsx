@@ -135,7 +135,7 @@ test('ignores empty submissions and key presses during a pending calculation', a
   expect(result.current.expressionProps.value).toBe('3')
 })
 
-test('highlights a failed calculation and can restore the last successful result', async () => {
+test('opens and dismisses the black hole and can restore the last successful result', async () => {
   const detail = 'The divisor evaluates to zero.'
   vi.stubGlobal(
     'fetch',
@@ -143,7 +143,10 @@ test('highlights a failed calculation and can restore the last successful result
       .fn<typeof fetch>()
       .mockResolvedValueOnce(Response.json({ result: '9', rounded: false }))
       .mockResolvedValueOnce(
-        Response.json({ detail, start: 1, end: 2 }, { status: 422 }),
+        Response.json(
+          { code: 'division_by_zero', detail, start: 1, end: 2 },
+          { status: 422 },
+        ),
       ),
   )
   const { result, press } = renderCalculator()
@@ -152,11 +155,19 @@ test('highlights a failed calculation and can restore the last successful result
   await waitFor(() => expect(result.current.expressionProps.value).toBe('9'))
   press('8', '/', '0', '=')
   await waitFor(() => {
-    expect(result.current.displayProps.feedback?.message).toBe(detail)
+    expect(result.current.blackHoleOpen).toBe(true)
   })
+  expect(result.current.displayProps.feedback?.message).toBe(detail)
   expect(result.current.expressionProps.value).toBe('8 ÷ 0')
   expect(result.current.expressionProps.highlight).toEqual({ start: 2, end: 3 })
   expect(result.current.displayProps.lastExpression).toBe('8 + 1')
+
+  fireEvent.keyDown(window, { key: 'Escape' })
+  expect(result.current.expressionProps.value).toBe('8 ÷ 0')
+
+  act(() => result.current.dismissBlackHole())
+  expect(result.current.blackHoleOpen).toBe(false)
+  expect(result.current.displayProps.feedback?.message).toBe(detail)
 
   act(() => result.current.displayProps.onRestore())
   expect(result.current.expressionProps.value).toBe('9')
@@ -174,7 +185,10 @@ test.each([
     vi
       .fn()
       .mockResolvedValue(
-        Response.json({ detail, start, end }, { status: 422 }),
+        Response.json(
+          { code: 'expected_operand', detail, start, end },
+          { status: 422 },
+        ),
       ),
   )
   const { result, press } = renderCalculator()
@@ -183,6 +197,7 @@ test.each([
   await waitFor(() => {
     expect(result.current.displayProps.feedback?.message).toBe(detail)
   })
+  expect(result.current.blackHoleOpen).toBe(false)
   expect(result.current.expressionProps.highlight).toBeUndefined()
 })
 

@@ -2,7 +2,7 @@ export type Span = { start: number; end: number }
 
 export type CalculatorError =
   | { kind: 'digits' | 'operands' | 'nesting'; limit: number }
-  | { kind: 'request'; detail: string; span?: Span }
+  | { kind: 'request'; detail: string; code?: string; span?: Span }
   | { kind: 'unavailable' | 'invalid-response' }
 
 export function errorMessage(error: CalculatorError): string {

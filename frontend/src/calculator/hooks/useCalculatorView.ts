@@ -1,6 +1,6 @@
-import { useId, useMemo } from 'react'
+import { useId, useMemo, useState } from 'react'
 
-import { errorMessage } from '../utils/calculatorFeedback'
+import { type CalculatorError, errorMessage } from '../utils/calculatorFeedback'
 import { type CalculatorKey, visibleExpression } from '../utils/calculatorInput'
 import { formatExpression } from '../utils/formatExpression'
 import { useCalculator } from './useCalculator'
@@ -12,6 +12,12 @@ export function useCalculatorView() {
   const feedbackId = useId()
   const { draft, isPending, lastCalculation } = calculator
   const { error } = draft
+  const [dismissedError, setDismissedError] = useState<CalculatorError>()
+  const blackHoleOpen =
+    !isPending &&
+    error !== dismissedError &&
+    error?.kind === 'request' &&
+    error.code === 'division_by_zero'
   const editor = useExpressionEditor(
     visibleExpression(draft),
     draft.caret,
@@ -25,8 +31,10 @@ export function useCalculatorView() {
     calculator.pressKey(key, editor.readSelection())
   }
 
-  useCalculatorKeyboard(pressKey)
+  useCalculatorKeyboard(pressKey, blackHoleOpen)
   return {
+    blackHoleOpen,
+    dismissBlackHole: () => setDismissedError(error),
     onButtonMouseDown: editor.onButtonMouseDown,
     displayProps: {
       pending: isPending,

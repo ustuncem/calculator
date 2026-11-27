@@ -5,9 +5,13 @@ import {
   getKeyboardCalculatorKey,
 } from '../utils/calculatorInput'
 
-export function useCalculatorKeyboard(onKey: (key: CalculatorKey) => void) {
+export function useCalculatorKeyboard(
+  onKey: (key: CalculatorKey) => void,
+  paused: boolean,
+) {
   const handleKeyDown = useEffectEvent((event: KeyboardEvent) => {
-    if (event.defaultPrevented || event.isComposing || event.metaKey) return
+    if (paused || event.defaultPrevented || event.isComposing || event.metaKey)
+      return
     if (
       !event.getModifierState('AltGraph') &&
       (event.ctrlKey || (event.altKey && event.key !== '±'))

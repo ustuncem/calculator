@@ -148,7 +148,7 @@ export function rejectCalculation(draft: Draft, error: CalculatorError): Draft {
     return { ...draft, error }
   // A rejected sign change describes the hidden source of an unchanged result.
   if (draft.mode === 'result') {
-    return { ...draft, error: { kind: 'request', detail: error.detail } }
+    return { ...draft, error: { ...error, span: undefined } }
   }
 
   const prefix = groupedExpression(draft.base)

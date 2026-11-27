@@ -56,10 +56,18 @@ function problemSpan(problem: unknown, length: number): Span | undefined {
 
 function requestError(error: unknown, length: number): CalculatorError {
   if (error instanceof HttpError) {
+    const { problem } = error
     return {
       kind: 'request',
       detail: error.message,
-      span: problemSpan(error.problem, length),
+      code:
+        problem &&
+        typeof problem === 'object' &&
+        'code' in problem &&
+        typeof problem.code === 'string'
+          ? problem.code
+          : undefined,
+      span: problemSpan(problem, length),
     }
   }
   return {

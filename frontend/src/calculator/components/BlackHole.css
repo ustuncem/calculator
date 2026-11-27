@@ -1,0 +1,139 @@
+.black-hole-dialog {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background: transparent;
+}
+
+.black-hole-dialog[open] {
+  display: grid;
+  place-items: center;
+}
+
+.black-hole-dialog::backdrop {
+  background: transparent;
+}
+
+.black-hole-dialog::before {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(1px 1px at 12% 22%, #cdabe0 60%, transparent),
+    radial-gradient(1px 1px at 32% 13%, #e6dcf2 60%, transparent),
+    radial-gradient(1px 1px at 78% 18%, #ebb98a 60%, transparent),
+    radial-gradient(1px 1px at 69% 79%, #d8b8ed 60%, transparent),
+    radial-gradient(1px 1px at 38% 83%, #e8bc9a 60%, transparent),
+    radial-gradient(1px 1px at 24px 48px, #9971a4 60%, transparent) 11px 7px /
+      137px 193px,
+    radial-gradient(1px 1px at 43px 29px, #695488 60%, transparent) 24px 19px /
+      89px 113px,
+    radial-gradient(1px 1px at 146px 84px, #e5b181 60%, transparent) 0 13px /
+      211px 157px,
+    radial-gradient(ellipse at center, #1d0c26, #030209 67%);
+  content: '';
+}
+
+.black-hole {
+  --disk: radial-gradient(
+    ellipse closest-side,
+    transparent 50%,
+    #8d304a65 55%,
+    #fe8b4d 61%,
+    #fff1d3 66%,
+    #ffc17b 69%,
+    #f16b40 74%,
+    #96345d90 86%,
+    #51257c3d 94%,
+    transparent
+  );
+  position: relative;
+  width: clamp(6rem, 23vmin, 12rem);
+  aspect-ratio: 1;
+  pointer-events: none;
+}
+
+.black-hole::before,
+.black-hole::after {
+  position: absolute;
+  inset: 21% -82%;
+  background: var(--disk);
+  content: '';
+  transform: rotate(-24deg);
+}
+
+.black-hole::after {
+  clip-path: inset(50% 0 0);
+}
+
+.black-hole::before {
+  clip-path: inset(0 0 50% 0);
+}
+
+.black-hole-core {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: #010104;
+  box-shadow:
+    0 -2px 4px #fff2d3,
+    1px -7px 11px #ff9968,
+    0 -12px 25px #c85285,
+    0 0 54px #7634a8;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .black-hole-dialog::before {
+    animation: black-hole-darken var(--black-hole-duration) linear both;
+  }
+
+  .black-hole {
+    animation: black-hole-collapse var(--black-hole-duration) both;
+  }
+
+  @keyframes black-hole-darken {
+    0% {
+      opacity: 0;
+    }
+
+    28% {
+      opacity: 0.25;
+    }
+
+    62%,
+    100% {
+      opacity: 1;
+    }
+  }
+
+  @keyframes black-hole-collapse {
+    0% {
+      opacity: 0;
+      transform: scale(0.03) rotate(-25deg);
+    }
+
+    22% {
+      opacity: 1;
+      transform: scale(0.78) rotate(-5deg);
+    }
+
+    66% {
+      transform: scale(1.24) rotate(12deg);
+    }
+
+    84% {
+      opacity: 1;
+      transform: scale(1.12) rotate(17deg);
+    }
+
+    100% {
+      opacity: 0;
+      transform: scale(0.01) rotate(55deg);
+    }
+  }
+}

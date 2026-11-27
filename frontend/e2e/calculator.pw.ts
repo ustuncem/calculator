@@ -49,6 +49,35 @@ test('restores a rounded result and continues from its exact signed value', asyn
   await expect(rounded).toHaveCount(0)
 })
 
+test('division by zero opens a dismissible black hole and keeps the expression', async ({
+  page,
+}) => {
+  await page.goto('/')
+  const entry = page.getByRole('textbox', { name: 'Expression' })
+  const blackHole = page.getByRole('dialog', { name: 'Division by zero' })
+  const dismiss = blackHole.getByRole('button', { name: 'Dismiss' })
+
+  await entry.pressSequentially('8/(3-3)')
+  await entry.press('Enter')
+  await expect(dismiss).toBeFocused()
+  await page.keyboard.press('Escape')
+  await expect(blackHole).toBeHidden()
+  await expect(entry).toBeFocused()
+  await expect(entry).toHaveValue('8 ÷ (3 − 3)')
+
+  await entry.press('Enter')
+  await dismiss.click()
+  await expect(blackHole).toBeHidden()
+
+  await entry.press('Enter')
+  await expect(blackHole).toBeVisible()
+  await expect(blackHole).toBeHidden({ timeout: 4000 })
+  await expect(entry).toHaveValue('8 ÷ (3 − 3)')
+  await expect(page.getByRole('alert')).toHaveText(
+    'The divisor evaluates to zero.',
+  )
+})
+
 test('applies postfix percentage from the keypad and keyboard', async ({
   page,
 }) => {
