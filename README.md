@@ -1,98 +1,113 @@
-# Calculator
+# 🧮 Calculator
 
-A React calculator with a Go backend that evaluates decimal expressions using exact rational arithmetic. [Live calculator](https://calculator-web-production-710b13d9.up.railway.app) · [Git repository](https://github.com/ustuncem/calculator) · [Design decisions](specs/business_rules.md) · [AI prompt excerpts](specs/ai-prompts.md)
+An animated calculator with a React frontend and a Go backend. Type or tap an expression, press equals, and keep calculating from the result.
 
-## Setup
+[![Calculator CI](https://github.com/ustuncem/calculator/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/ustuncem/calculator/actions/workflows/ci.yml)
 
-From the repository root, start the Vite frontend and Go API with Docker Compose.
+[Try the calculator](https://calculator-web-production-710b13d9.up.railway.app/) · [Browse the API docs](https://calculator-api-production-537c84c7.up.railway.app/docs) · [View the GitHub repository](https://github.com/ustuncem/calculator)
+
+## ✨ What it can do
+
+- Add, subtract, multiply, and divide with standard operator precedence. Use parentheses to group terms, as in `(2 + 3) * 4`.
+- Use postfix percentages on numbers or groups. `10%` is `0.1`, so `200 + 10%` gives `200.1`. To increase 200 by 10%, enter `200 * (1 + 10%)`.
+- Enter and edit expressions with the keyboard or the animated keypad. The layout adapts to phones and desktops, with light and dark themes.
+- Recall your last result, continue a calculation, and see when a result was rounded.
+
+## 🚀 Quick start
+
+Docker with Compose is all you need for the containerized setup. Compose provides Node.js and Go, and this setup was tested on a MacBook. On macOS, install and start a current release of [Docker Desktop](https://docs.docker.com/desktop/setup/install/mac-install/).
 
 ```sh
-docker-compose up
+git clone https://github.com/ustuncem/calculator.git
+cd calculator
+docker compose up
 ```
 
-Open [the calculator](http://127.0.0.1:3000) or [the API docs](http://127.0.0.1:8080/docs). Both services load the current workspace source. Vite applies frontend edits live, and Air rebuilds the API when Go files change. Press Ctrl+C to stop the stack.
+Once both services are running, open [localhost:3000](http://localhost:3000) for the calculator or [localhost:8080/docs](http://localhost:8080/docs) for the API docs. Vite reloads frontend changes and Air rebuilds the Go API when you edit it. Press Ctrl+C to stop the stack.
 
-To run the API by itself and publish it on port 8080, use:
+### Run the services directly
 
-```sh
-docker build -t calculator-api:local backend
-docker run --detach --rm --name calculator-api -p 127.0.0.1:8080:8080 calculator-api:local
-```
-
-Stop the container with `docker stop calculator-api`.
-
-To run directly with Go 1.27.4, use these commands from the repository root.
+Use **Node.js 24** with npm and **Go 1.27.4**, matching the versions used in Docker and CI. Start the backend from the repository root in one terminal.
 
 ```sh
 cd backend
 go run ./internal/calculator
 ```
 
-The API defaults to port `8080`. Set `PORT` to configure the server's listening port.
-
-## Frontend
-
-The frontend uses TypeScript, Vite and Tailwind. Start the development server with Node 24 and npm.
+From the repository root in a second terminal, start the frontend on port 3000.
 
 ```sh
 cd frontend
 npm ci
-npm run dev
+npm run dev -- --host 127.0.0.1 --port 3000 --strictPort
 ```
 
-Vite and Caddy forward `/api/*` and `/problems/*` to the same upstream. Vite uses `frontend/.env.development` for local development. The production image reads the Railway URL from `frontend/.env.production`. Compose overrides `API_URL` to reach its local Go container.
+Vite forwards API requests to the Go server on port 8080. Open the calculator at [localhost:3000](http://localhost:3000).
 
-Run `npm run lint`, `npm run format:check`, and `npm run build` in the same directory to check the frontend.
+## 🏗️ How it works
 
-Put frontend tests in a `__tests__` subfolder of the directory they cover. Run `npm test` to run the Vitest suite once or `npm run test:watch` to rerun it as you edit.
+The frontend uses **Vite, React, and TypeScript**, with Tailwind CSS for styling and Motion for animations. The backend uses **Go**, with Chi for routing and Huma for OpenAPI. Its domain-driven design keeps the expression rules separate from the application use case and HTTP layer. The structure is inspired by [Three Dots Labs’ Wild Workouts](https://github.com/ThreeDotsLabs/wild-workouts-go-ddd-example).
 
-## API usage
+One option was an endpoint for each arithmetic operation. That would leave the client coordinating intermediate results and deciding which operation to run first. The calculator sends the whole expression to a single endpoint. A lexer reads the tokens, a parser checks the grammar and precedence, and an evaluator performs exact arithmetic with Go’s `math/big.Rat`.
 
-With the API running at `http://127.0.0.1:8080`, use `GET /health` to check availability, `/docs` to browse the API, and `/openapi.json` to retrieve the OpenAPI definition.
+With the arithmetic rules in one place, the frontend can focus on editing, animation, and showing where an expression went wrong. It can even continue a rounded result using the original expression. If you calculate `1 / 3` and then press `* 3`, the client sends `(1 / 3) * 3` and gets exactly `1`.
 
-Send an expression to `POST /api/v1/calculate`.
+For the project scope, input limits, and design notes, see the [feature set](specs/features.md), [calculator rules](specs/business_rules.md), and [AI prompt excerpts](specs/ai-prompts.md).
+
+## 🔌 Use the API
+
+Send a JSON object with an `expression` string to `POST /api/v1/calculate`.
 
 ```sh
-curl --fail --silent --show-error http://127.0.0.1:8080/api/v1/calculate \
+curl -fsS http://localhost:8080/api/v1/calculate \
   -H 'Content-Type: application/json' \
   --data '{"expression":"0.1 + 0.2"}'
 ```
 
 ```json
-{"result":"0.3","rounded":false}
+{ "result": "0.3", "rounded": false }
 ```
 
-Results are decimal strings. Results with an absolute value of 10^15 or greater use scientific notation such as `"1E+15"`. Repeating decimals round to 15 fractional places and return `"rounded":true`. Invalid expressions return HTTP 422 with a stable error `code` and a UTF-16 span when the error points to part of the expression. JSON bodies over 4,096 bytes return HTTP 413. For grammar, limits, and error examples, see the [business rules](specs/business_rules.md).
+Try a compound expression with grouping and a percentage. This returns `"210"`.
 
-In Postman, import the [Calculator API collection](postman/calculator.postman_collection.json) and both environments. Select [Calculator Local](postman/local.postman_environment.json) or [Calculator Production](postman/production.postman_environment.json) in the environment picker. Each request uses the selected environment’s `baseUrl`.
+```sh
+curl -fsS http://localhost:8080/api/v1/calculate \
+  -H 'Content-Type: application/json' \
+  --data '{"expression":"200 * (1 + 10%) - 20 / 2"}'
+```
 
-## Tests
+Results are decimal strings. For repeating decimals, the API rounds to 15 fractional places and sets `rounded` to `true`.
 
-Run the Postman contract suite from the repository root.
+For more examples, import the [Calculator API Postman collection](postman/calculator.postman_collection.json) and select the [Local environment](postman/local.postman_environment.json) or [Production environment](postman/production.postman_environment.json). The collection includes successful requests, errors, and input boundaries. The API also serves [interactive docs](http://localhost:8080/docs) and an [OpenAPI definition](http://localhost:8080/openapi.json).
+
+## 🧪 Run the tests
+
+From the repository root, run the native Go tests and the Vitest suite. Install the frontend dependencies with `npm ci` in `frontend/` first.
+
+```sh
+(cd backend && go test ./...)
+npm --prefix frontend test
+```
+
+For Playwright, install Google Chrome and keep the full stack running on port 3000.
+
+```sh
+npm --prefix frontend run test:browser
+```
+
+Run the Go and Postman contract checks in Docker, using a separate Compose project.
 
 ```sh
 docker compose -p calculator-check up --build --exit-code-from verify verify
 docker compose -p calculator-check --profile verify down
 ```
 
-The Docker build runs the Go tests. Compose starts the resulting image on its own network, exports `/openapi.json`, regenerates the Postman requests, and runs the existing Postman assertions against that container. A failed build or assertion fails the command. GitHub Actions attaches the OpenAPI spec and generated requests as the `postman-contract` artifact on successful runs.
+<details>
+<summary>Coverage and CI checks</summary>
 
-Run the browser regressions against the production images with Node 24, frontend dependencies and Google Chrome installed.
+On November 27, 2026, Go tests covered **90.7%** of backend statements and **100%** of expression-domain statements. The 46 Vitest tests covered **64.53%** of frontend statements. Seven Playwright tests and 66 Postman assertions run separately from statement coverage.
 
-```sh
-docker compose -p calculator-check up --build -d web-ci
-sh frontend/smoke-test.sh http://127.0.0.1:8181
-CALCULATOR_URL=http://127.0.0.1:8181 npm --prefix frontend run test:browser
-docker compose -p calculator-check --profile verify down
-```
-
-The browser suite exercises desktop and emulated touch input, history, rounding, sign changes, and the published expression limits. Each limit example checks the editor and posts to the Go endpoint through the same frontend origin.
-
-### V1 coverage
-
-Measured on November 27, 2026. Go tests covered **90.5%** of backend statements and **100%** of expression-domain statements. The 45 Vitest tests covered **63.79%** of frontend statements. The six Chrome regressions and 66 Postman assertions run separately from statement coverage.
-
-Generate both coverage reports from the repository root after installing the frontend dependencies.
+Generate HTML coverage reports from the repository root.
 
 ```sh
 mkdir -p coverage/backend
@@ -102,38 +117,30 @@ mkdir -p coverage/backend
 npm --prefix frontend run test:coverage
 ```
 
-Open `coverage/backend/index.html` and `coverage/frontend/index.html` for line-by-line reports. The backend also writes `summary.txt`, and the frontend writes `coverage-summary.json`.
+Open `coverage/backend/index.html` and `coverage/frontend/index.html` to browse the reports.
 
-Run the evaluator fuzzer separately from the repository root.
+To fuzz the Go evaluator for 10 seconds, run the following from the repository root.
 
 ```sh
 (cd backend && go test -run '^$' -fuzz '^FuzzEvaluate$' -fuzztime 10s -parallel 4 ./internal/calculator/domain/expression)
 ```
 
-To run the Postman collection against the running API from the repository root, use the Postman CLI.
+To run Playwright against the production images the way CI does, use a separate Compose project.
 
 ```sh
-postman collection run postman/calculator.postman_collection.json -e postman/local.postman_environment.json --no-report-events
+docker compose -p calculator-check up --build -d web-ci
+sh frontend/smoke-test.sh http://127.0.0.1:8181
+CALCULATOR_URL=http://127.0.0.1:8181 npm --prefix frontend run test:browser
+docker compose -p calculator-check --profile verify down
 ```
 
-## Deployment
+The frontend image build runs lint, format checks, Vitest, and the TypeScript and Vite build. The contract job runs the checked-in assertions and publishes the OpenAPI spec and generated Postman requests in the `postman-contract` GitHub Actions artifact.
 
-GitHub Actions selects builds by the files changed on a pull request or push to `main`.
+</details>
 
-| Changed paths | Build |
-| --- | --- |
-| `frontend/**` | Build the production images, lint, format-check, type-check, run Vitest and exercise the frontend through Chrome |
-| `backend/**` | Run Go and Postman verification plus the browser suite against the changed Go image |
-| `postman/**` | Run Go and Postman verification |
-| `compose.yaml` or `.github/workflows/**` | Run contract and browser verification |
-| Documentation only | Skip builds |
+## ☁️ Deployment
 
-After verification succeeds on a push to `main`, each changed service directory is eligible for deployment to Railway with the production `RAILWAY_TOKEN` project secret. Each service has its own deployment queue. A newer commit supersedes a pending deployment only when its service directory differs.
+GitHub Actions automatically deploys changes to the frontend or backend on a push to `main` after the relevant checks pass. Railway builds each service from its own Dockerfile. The web service is checked at `/` and the API at `/health`. See the [CI workflow](.github/workflows/ci.yml) and [Railway deploy workflow](.github/workflows/deploy.yml).
 
-Railway builds `calculator-web` from `/frontend` and checks `/`. It builds `calculator-api` from `/backend` and checks `/health`. Each service watches its own directory for any Railway Git-triggered deployments.
-
-To smoke-test production, run the collection’s `Health` request against Railway.
-
-```sh
-postman collection run postman/calculator.postman_collection.json -e postman/production.postman_environment.json -i Health --no-report-events
-```
+- **Web** · [Open the production calculator](https://calculator-web-production-710b13d9.up.railway.app/)
+- **API** · Use `https://calculator-api-production-537c84c7.up.railway.app` as the base URL. [API docs](https://calculator-api-production-537c84c7.up.railway.app/docs) · [Health check](https://calculator-api-production-537c84c7.up.railway.app/health)

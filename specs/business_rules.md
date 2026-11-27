@@ -1,5 +1,11 @@
 # Calculator business rules
 
+## V1 design assumptions
+
+- **Calculation scope.** V1 covers basic arithmetic and postfix percentages. Advanced scientific operations such as powers, square roots, logarithms, and trigonometry are outside the v1 scope.
+- **Language.** The interface and error messages are available in English only.
+- **Number format.** The calculator uses a fixed US-style display with a decimal point and a grouping comma, as in `1,234.50`. Turkish formatting uses the opposite separators, as in `1.234,50`. The calculator treats `1.234` as a decimal value, while Turkish notation uses it for the integer `1234`. Enter decimals with `.` and omit grouping separators in API expressions, as in `1234.50`.
+
 ## Essential expression rules
 
 | Rule | Examples and boundaries |
